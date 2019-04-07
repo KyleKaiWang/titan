@@ -7,11 +7,9 @@
 //
 #include "Core.h"
 
-#endif /* Application_hpp */
-
 namespace Titan {
-    
-    class TITAN_API Application
+    //TODO: class TITAN_API Application
+    class Application
     {
     public:
         Application();
@@ -19,6 +17,8 @@ namespace Titan {
         
         void Run();
         
-        Application* CreateApplication();
-    }
+    };
+    
+    Application* CreateApplication();
+
 }

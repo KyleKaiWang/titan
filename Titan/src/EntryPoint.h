@@ -9,14 +9,22 @@
 
 #ifdef TITAN_PLATFORM_WINDOWS
 
+//TODO: fix it
+#include "Log.h"
+#include "Titan.h"
+
 extern Titan::Application* Titan::CreateApplication();
 
 
-int main(int argc, const char * argv[])
+int StartMain()
 {
+    Titan::Log::Init();
+    
     auto app = Titan::CreateApplication();
     app->Run();
     delete app;
+    
+    return 0;
 }
 
 #endif

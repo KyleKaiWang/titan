@@ -22,9 +22,10 @@ public:
     {
         
     }
-}
+};
 
 Titan::Application* CreateApplication()
 {
     return new Sandbox();
 }
+
