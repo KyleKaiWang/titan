@@ -14,7 +14,7 @@
 namespace Titan {
     
     //TODO: class TITAN_API Log
-    class Log
+    class TITAN_API Log
     {
     public:
         

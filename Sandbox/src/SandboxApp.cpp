@@ -24,7 +24,7 @@ public:
     }
 };
 
-Titan::Application* CreateApplication()
+Titan::Application* Titan::CreateApplication()
 {
     return new Sandbox();
 }

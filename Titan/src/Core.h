@@ -9,10 +9,11 @@
 
 #ifdef TITAN_PLATFORM_WINDOWS
     #ifdef TITAN_BUILD_DLL
-        #define TITAN_API __deslspec(dllexport)
+        #define TITAN_API __declspec(dllexport)
     #else
-        #define TITAN_API __deslspec(dllimport)
+        #define TITAN_API __declspec(dllimport)
     #endif
 #else
     #error Titan only work at windows
 #endif
+

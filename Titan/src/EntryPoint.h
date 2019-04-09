@@ -16,7 +16,7 @@
 extern Titan::Application* Titan::CreateApplication();
 
 
-int StartMain()
+int main(int argc, char** argv)
 {
     Titan::Log::Init();
     

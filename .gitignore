@@ -1,2 +1,5 @@
 # ignore xcodeproj
 Titan.xcodeproj/
+
+# Files
+*.user
