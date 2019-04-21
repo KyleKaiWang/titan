@@ -7,6 +7,8 @@
 //
 
 #include "Application.h"
+#include "Events/ApplicationEvent.h"
+#include "Log.h"
 
 
 
@@ -14,6 +16,7 @@ namespace Titan {
     
     Application::Application()
     {
+		m_Window = std::unique_ptr<Window>(Window::Create());
     }
     
     Application::~Application()
@@ -22,7 +25,11 @@ namespace Titan {
     
     void Application::Run()
     {
-        while (true);
+		//WindowResizeEvent e(1280, 720);
+		while (m_Running)
+		{
+			m_Window->OnUpdate();
+		}
     }
     
     

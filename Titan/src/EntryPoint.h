@@ -10,8 +10,8 @@
 #ifdef TITAN_PLATFORM_WINDOWS
 
 //TODO: fix it
-#include "Log.h"
-#include "Titan.h"
+//#include "Log.h"
+//#include "Titan.h"
 
 extern Titan::Application* Titan::CreateApplication();
 
@@ -19,6 +19,7 @@ extern Titan::Application* Titan::CreateApplication();
 int main(int argc, char** argv)
 {
     Titan::Log::Init();
+	T_CORE_WARN("Initail Log!");
     
     auto app = Titan::CreateApplication();
     app->Run();

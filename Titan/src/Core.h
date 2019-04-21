@@ -17,3 +17,16 @@
     #error Titan only work at windows
 #endif
 
+#ifdef TITAN_DEBUG
+	#define TITAN_ENABLE_ASSERTS
+#endif
+
+#ifdef TITAN_ENABLE_ASSERTS
+	#define TITAN_ASSERT(x, ...) { if(!(x)) { TITAN_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+	#define TITAN_CORE_ASSERT(x, ...) { if(!(x)) { TITAN_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#else
+	#define TITAN_ASSERT(x, ...)
+	#define TITAN_CORE_ASSERT(x, ...)
+#endif
+
+#define BIT(x) (1<<x)
