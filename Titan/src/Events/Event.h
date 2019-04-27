@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tpch.h"
 #include "Core.h"
 
 #include <string>
@@ -13,7 +14,7 @@ namespace Titan {
 		WindowClose, WindowResize, WindowFocus, WindowMoved,
 		AppTick, AppUpdate, AppRender,
 		KeyPressed, KeyReleased, KeyTyped,
-		MouseButtonPressed, MouseButtonRelease, MouseScrolled
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType()  { return EventType::##type; }\

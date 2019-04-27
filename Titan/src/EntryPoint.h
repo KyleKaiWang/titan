@@ -19,7 +19,7 @@ extern Titan::Application* Titan::CreateApplication();
 int main(int argc, char** argv)
 {
     Titan::Log::Init();
-	T_CORE_WARN("Initail Log!");
+	TITAN_CORE_WARN("Initail Log!");
     
     auto app = Titan::CreateApplication();
     app->Run();

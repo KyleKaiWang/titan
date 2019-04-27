@@ -4,13 +4,6 @@
 #include <GLFW/glfw3.h>
 
 namespace Titan {
-
-	static bool s_GLFWInitialized = false;
-
-	static void GLFWErrorCallback(int error, const char* description)
-	{
-		T_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
-	}
 	
 	class WindowsWindow : public Window
 	{
@@ -44,7 +37,7 @@ namespace Titan {
 
 			EventCallbackFunc EventCallback;
 		};
-
+		
 		WindowData m_Data;
 	};
 }

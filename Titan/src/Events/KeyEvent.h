@@ -1,6 +1,6 @@
 #pragma once
 
-include "Event.h"
+#include "Events/Event.h"
 
 namespace Titan {
 
@@ -9,7 +9,7 @@ namespace Titan {
 	public:
 		inline int GetKeyCode() const { return m_KeyCode; }
 
-		EVENT_CLASS_TYPE(EventCategoryKeyborad | EventCategoryInput)
+		EVENT_CLASS_CATEGORY(EventCategoryKeyborad | EventCategoryInput)
 
 	protected:
 		KeyEvent(int keycode)
@@ -22,7 +22,7 @@ namespace Titan {
 	{
 	public:
 		KeyPressedEvent(int keycode, int repeatCount)
-			:KeyEvent(keycode), m_RepeatCount(repeatCount)
+			:KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
 
