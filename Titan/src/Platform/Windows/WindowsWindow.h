@@ -2,7 +2,6 @@
 
 #include "Window.h"
 #include <GLFW/glfw3.h>
-
 namespace Titan {
 	
 	class WindowsWindow : public Window
