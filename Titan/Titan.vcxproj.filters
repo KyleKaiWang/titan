@@ -1164,6 +1164,8 @@
     <ClInclude Include="thirdparty\glm\glm\vector_relational.hpp">
       <Filter>thirdparty\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="Layer.h" />
+    <ClInclude Include="LayerStack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp">
@@ -1178,5 +1180,7 @@
     <ClCompile Include="src\tpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Layer.cpp" />
+    <ClCompile Include="LayerStack.cpp" />
   </ItemGroup>
 </Project>

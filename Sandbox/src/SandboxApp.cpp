@@ -1,26 +1,36 @@
-//
-//  main.cpp
-//  Sandbox
-//
-//  Created by Kyle Wang on 14/03/2019.
-//  Copyright © 2019 Kyle Wang. All rights reserved.
-//
-
 #include <Titan.h>
-#include <iostream>
 
+class ExampleLayer : public Titan::Layer
+{
+
+public:
+
+	ExampleLayer()
+		:Layer("Example")
+	{}
+
+	void OnUpdate() override
+	{
+
+		TITAN_INFO("ExampleLayer::Update");
+	}
+
+	void OnEvent(Titan::Event& event) override
+	{
+		TITAN_TRACE("{0}", event);
+	}
+};
 
 class Sandbox : public Titan::Application
 {
 public:
     Sandbox()
     {
-        
+		PushLayer(new ExampleLayer());
     }
     
     ~Sandbox()
     {
-        
     }
 };
 
