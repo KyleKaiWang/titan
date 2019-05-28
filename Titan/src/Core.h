@@ -1,10 +1,3 @@
-//
-//  Core.h
-//  Titan
-//
-//  Created by Kyle Wang on 16/03/2019.
-//  Copyright © 2019 Kyle Wang. All rights reserved.
-//
 #pragma once
 
 #ifdef TITAN_PLATFORM_WINDOWS
@@ -30,3 +23,5 @@
 #endif
 
 #define BIT(x) (1<<x)
+
+#define TITAN_BIND_EVENT_FUNC(func) std::bind(&func, this, std::placeholders::_1)
