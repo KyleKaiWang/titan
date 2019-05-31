@@ -1,16 +1,10 @@
-//
-//  Application.cpp
-//  Titan
-//
-//  Created by Kyle Wang on 16/03/2019.
-//  Copyright © 2019 Kyle Wang. All rights reserved.
-//
-
 #include "tpch.h"
 #include "Application.h"
 #include "Log.h"
 
 #include <glad/glad.h>
+
+#include "Input.h"
 
 
 namespace Titan {

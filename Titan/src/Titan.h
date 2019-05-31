@@ -4,6 +4,10 @@
 #include "../Layer.h"
 #include "Log.h"
 
+#include "Input.h"
+#include "KeyCodes.h"
+#include "MouseButtonCodes.h"
+
 #include "ImGui/ImGuiLayer.h"
 
 // ---Entry Point---------------------
