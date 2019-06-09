@@ -1,4 +1,5 @@
 #include <Titan.h>
+#include "imgui/imgui.h"
 
 class ExampleLayer : public Titan::Layer
 {
@@ -15,6 +16,13 @@ public:
 		{
 			TITAN_TRACE("Tab key is pressed (polling)!");
 		}
+	}
+
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Test");
+		ImGui::Text("Hello World");
+		ImGui::End();
 	}
 
 	void OnEvent(Titan::Event& event) override
@@ -37,7 +45,6 @@ public:
     Sandbox()
     {
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Titan::ImGuiLayer());
     }
     
     ~Sandbox()

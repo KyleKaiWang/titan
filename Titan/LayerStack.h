@@ -6,7 +6,7 @@
 
 namespace Titan {
 	
-	class LayerStack
+	class TITAN_API LayerStack
 	{
 	public:
 		LayerStack();
@@ -22,6 +22,6 @@ namespace Titan {
 		
 	private:
 		std::vector<Layer*> m_Layers;
-		std::vector<Layer*>::iterator m_LayerInsert;
+		unsigned int m_LayerInsertIndex = 0;
 	};
 }
