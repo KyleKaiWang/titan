@@ -7,6 +7,9 @@
     <Filter Include="src\Events">
       <UniqueIdentifier>{7162C20E-5D1A-045C-C621-DDB7B2F89E4C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\ImGui">
+      <UniqueIdentifier>{170E22B3-8378-D629-CCB6-87CF3860B47E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Platform">
       <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
     </Filter>
@@ -34,11 +37,11 @@
     <Filter Include="thirdparty\glm\glm\gtx">
       <UniqueIdentifier>{D02B9BF1-BC25-C443-A592-5A54912B2AB0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\ImGui">
-      <UniqueIdentifier>{58e76e9f-799c-429e-8e16-2208e621b453}</UniqueIdentifier>
+    <Filter Include="src\Renderer">
+      <UniqueIdentifier>{c2b2b2e7-d770-4126-8a46-6fae5a085d80}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Platform\OpenGL">
-      <UniqueIdentifier>{81c4d53b-d279-4d12-8101-0a91cd8c0c6c}</UniqueIdentifier>
+      <UniqueIdentifier>{7b577fa9-63cc-464c-8840-ca5592b16155}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,8 +66,23 @@
     <ClInclude Include="src\Events\MouseEvent.h">
       <Filter>src\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\ImGui\ImGuiLayer.h">
+      <Filter>src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\KeyCodes.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\Log.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MouseButtonCodes.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h">
+      <Filter>src\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>src\Platform\Windows</Filter>
@@ -1172,28 +1190,28 @@
     </ClInclude>
     <ClInclude Include="Layer.h" />
     <ClInclude Include="LayerStack.h" />
-    <ClInclude Include="src\ImGui\ImGuiLayer.h">
-      <Filter>src\ImGui</Filter>
+    <ClInclude Include="src\Renderer\GraphicsContext.h">
+      <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Windows\WindowsInput.h">
-      <Filter>src\Platform\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Input.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\KeyCodes.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MouseButtonCodes.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h">
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ImGui\ImGuiBuild.cpp">
+      <Filter>src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImGui\ImGuiLayer.cpp">
+      <Filter>src\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="src\Log.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
@@ -1203,14 +1221,8 @@
     </ClCompile>
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LayerStack.cpp" />
-    <ClCompile Include="src\ImGui\ImGuiLayer.cpp">
-      <Filter>src\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
-      <Filter>src\Platform\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImGui\ImGuiBuild.cpp">
-      <Filter>src\ImGui</Filter>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
