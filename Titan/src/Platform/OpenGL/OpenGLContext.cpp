@@ -18,6 +18,11 @@ namespace Titan {
 		glfwMakeContextCurrent(m_WindowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		TITAN_CORE_ASSERT(status, "Failed to initialize Glad");
+
+		TITAN_CORE_INFO(" OpenGL Info:");
+		TITAN_CORE_INFO(" Vender: {0}", glGetString(GL_VENDOR));
+		TITAN_CORE_INFO(" Renderer: {0}", glGetString(GL_RENDERER));
+		TITAN_CORE_INFO(" Version: {0}", glGetString(GL_VERSION));
 	}
 
 	void OpenGLContext::SwapBuffers()
