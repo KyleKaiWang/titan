@@ -158,6 +158,7 @@
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Renderer\Shader.h" />
     <ClInclude Include="src\Titan.h" />
     <ClInclude Include="src\Window.h" />
     <ClInclude Include="src\tpch.h" />
@@ -536,6 +537,7 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
+    <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\tpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
