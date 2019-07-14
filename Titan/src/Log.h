@@ -1,10 +1,3 @@
-//
-//  Log.h
-//  Titan
-//
-//  Created by Kyle Wang on 28/03/2019.
-//  Copyright © 2019 Kyle Wang. All rights reserved.
-//
 #pragma once
 
 #include "tpch.h"
@@ -35,12 +28,12 @@ namespace Titan {
 #define TITAN_CORE_INFO(...)     ::Titan::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define TITAN_CORE_WARN(...)     ::Titan::Log::GetCoreLogger()->warn(__VA_ARGS__)
 #define TITAN_CORE_ERROR(...)    ::Titan::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define TITAN_CORE_FATAL(...)    ::Titan::Log::GetCoreLogger()->fatal(__VA_ARGS__)
+#define TITAN_CORE_FATAL(...)    ::Titan::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 // Client log macros
 #define TITAN_TRACE(...)         ::Titan::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define TITAN_INFO(...)          ::Titan::Log::GetClientLogger()->info(__VA_ARGS__)
 #define TITAN_WARN(...)          ::Titan::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define TITAN_ERROR(...)         ::Titan::Log::GetClientLogger()->error(__VA_ARGS__)
-#define TITAN_FATAL(...)         ::Titan::Log::GetClientLogger()->fatal(__VA_ARGS__)
+#define TITAN_FATAL(...)         ::Titan::Log::GetClientLogger()->critical(__VA_ARGS__)
 
