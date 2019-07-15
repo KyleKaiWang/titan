@@ -8,6 +8,9 @@ Titan.xcodeproj/
 
 # Files
 *.user
+*.sln
+*.vcxproj
+*.vcxproj.filters
 
 # External junk
 .DS_Store
