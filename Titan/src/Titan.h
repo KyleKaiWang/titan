@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Application.h"
-#include "../Layer.h"
+#include "Layer.h"
 #include "Log.h"
 
 #include "Input.h"
