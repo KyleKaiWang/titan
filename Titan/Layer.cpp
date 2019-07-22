@@ -6,7 +6,4 @@ namespace Titan {
 	Layer::Layer(const std::string& debugName)
 	{
 	}
-	Layer::~Layer()
-	{
-	}
 }

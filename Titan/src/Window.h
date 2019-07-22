@@ -26,7 +26,7 @@ namespace Titan {
 	public:
 		using EventCallbackFunc = std::function<void(Event&)>;
 
-		virtual ~Window() {}
+		virtual ~Window() = default;
 		
 		virtual void OnUpdate() = 0;
 
