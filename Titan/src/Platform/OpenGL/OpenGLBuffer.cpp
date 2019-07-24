@@ -35,6 +35,7 @@ namespace Titan {
 	////IndexBuffer////
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
+		: m_Count(count)
 	{
 		//OpenGL 4.5 only
 		//glCreateBuffers(1, &m_RendererID);

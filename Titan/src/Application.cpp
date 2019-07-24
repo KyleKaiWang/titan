@@ -40,6 +40,9 @@ namespace Titan {
 			{ ShaderDataType::Float4, "a_Color"}
 		};
 
+		vertexBuffer->SetLayout(layout);
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
+
 		uint32_t indices[3] = { 0,1,2 };
 		std::shared_ptr<IndexBuffer> indexBuffer;
 		indexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices)/sizeof(uint32_t)));
@@ -67,7 +70,7 @@ namespace Titan {
 		m_SquareVA->SetIndexBuffer(squareIB);
 
 		std::string vertexSrc = R"(
-			#version 430 core
+			#version 330 core
 
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Color;
@@ -84,7 +87,7 @@ namespace Titan {
 		)";
 
 		std::string fragmentSrc = R"(
-			#version 430 core
+			#version 330 core
 
 			layout(location = 0) out vec4 color;
 			
@@ -138,7 +141,7 @@ namespace Titan {
 			m_BlueShader->Bind();
 			Renderer::Submit(m_SquareVA);
 
-			m_SquareVA->Bind();
+			m_Shader->Bind();
 			Renderer::Submit(m_VertexArray);
 
 			Renderer::EndScene();
