@@ -106,7 +106,7 @@ namespace Titan {
 		glUseProgram(0);
 	}
 
-	void UploadUniformMat4(const std::string& name, glm::mat4& matrix)
+	void Shader::UploadUniformMat4(const std::string& name, glm::mat4& matrix)
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 
