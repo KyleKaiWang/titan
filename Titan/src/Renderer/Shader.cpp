@@ -6,11 +6,12 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Titan {
-	Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc)
+	Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	
-		const GLchar* source = vertexSrc.c_str();
+
+		const std::string vertexShaderString = GetShaderString(vertexShaderPath);
+		const GLchar* source = vertexShaderString.c_str();
 		glShaderSource(vertexShader, 1, &source, 0);
 	
 		glCompileShader(vertexShader);
@@ -33,11 +34,12 @@ namespace Titan {
 			return;
 		}
 
-
+		
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-		source = fragmentSrc.c_str();
-		glShaderSource(fragmentShader, 1, &source, 0);
+		const std::string fragmentShaderString = GetShaderString(fragmentShaderPath);
+		const GLchar* source2 = fragmentShaderString.c_str();
+		glShaderSource(fragmentShader, 1, &source2, 0);
 
 		glCompileShader(fragmentShader);
 
@@ -106,11 +108,38 @@ namespace Titan {
 		glUseProgram(0);
 	}
 
-	void Shader::UploadUniformMat4(const std::string& name, glm::mat4& matrix)
+	void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix)
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+
+	std::string Shader::GetShaderString(const std::string& shaderSourcePath)
+	{
+		// 1. retrieve the vertex/fragment source code from filePath
+		std::string shaderCode;
+		std::ifstream shaderFile;
+		// ensure ifstream objects can throw exceptions:
+		shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		try
+		{
+			// open files
+			shaderFile.open(shaderSourcePath);
+			std::stringstream ShaderStream;
+			// read file's buffer contents into streams
+			ShaderStream << shaderFile.rdbuf();
+			// close file handlers
+			shaderFile.close();
+			// convert stream into string
+			shaderCode = ShaderStream.str();
+		}
+		catch (std::ifstream::failure e)
+		{
+			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+		}
+		
+		return shaderCode;
 	}
 
 }

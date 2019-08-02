@@ -55,13 +55,13 @@ public:
 		squareIB.reset(Titan::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
-		std::string vertexSrc = #include "../shaders/BasicShader.vs";
-		std::string fragmentSrc = #include "../shaders/BasicShader.fs";
+		std::string vertexShaderPath = "shaders/BasicShader.vs";
+		std::string fragmentShaderPath = "shaders/BasicShader.fs";
 
-		m_Shader.reset(new Titan::Shader(vertexSrc, fragmentSrc));
+		m_Shader.reset(new Titan::Shader(vertexShaderPath, fragmentShaderPath));
 
-		std::string blueShaderVertexSrc = "../shaders/BlueShader.vs";
-		std::string blueShaderFragmentSrc = "../shaders/BlueShader.fs";
+		std::string blueShaderVertexSrc = "shaders/BlueShader.vs";
+		std::string blueShaderFragmentSrc = "shaders/BlueShader.fs";
 
 		m_BlueShader.reset(new Titan::Shader(blueShaderVertexSrc, blueShaderFragmentSrc));
 	}
@@ -104,9 +104,9 @@ public:
 		Titan::Renderer::BeginScene(m_Camera);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-		for(int y = 0; y = 10; y++)
+		for(int y = 0; y < 10; y++)
 		{
-			for(int x = 0; x = 10; x++)
+			for(int x = 0; x < 10; x++)
 			{
 				glm::vec3 pos(y * 0.1f, x * 0.1f, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;

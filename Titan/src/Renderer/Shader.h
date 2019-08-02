@@ -8,14 +8,15 @@ namespace Titan {
 	class Shader
 	{
 	public:
-		Shader(const std::string& vertexSrc, const std::string& fragmentSrc);
+		Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 		~Shader();
 
 		void Bind() const;
 		void UnBind() const;
 
-		void UploadUniformMat4(const std::string& name, glm::mat4& matrix);
+		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
 	private:
+		std::string GetShaderString(const std::string& shaderSourcePath);
 		uint32_t m_RendererID;
 	};
 }
