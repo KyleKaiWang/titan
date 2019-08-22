@@ -1,6 +1,8 @@
 #include <Titan.h>
+#include "Platform/OpenGL/OpenGLShader.h"
 #include "imgui/imgui.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class ExampleLayer : public Titan::Layer
 {
@@ -58,12 +60,12 @@ public:
 		std::string vertexShaderPath = "shaders/BasicShader.vs";
 		std::string fragmentShaderPath = "shaders/BasicShader.fs";
 
-		m_Shader.reset(new Titan::Shader(vertexShaderPath, fragmentShaderPath));
+		m_Shader.reset(Titan::Shader::Create(vertexShaderPath, fragmentShaderPath));
 
-		std::string blueShaderVertexSrc = "shaders/BlueShader.vs";
-		std::string blueShaderFragmentSrc = "shaders/BlueShader.fs";
+		std::string flatColorShaderVertexSrc = "shaders/BlueShader.vs";
+		std::string flatColorShaderFragmentSrc = "shaders/BlueShader.fs";
 
-		m_BlueShader.reset(new Titan::Shader(blueShaderVertexSrc, blueShaderFragmentSrc));
+		m_FlatColorShader.reset(Titan::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
 	}
 
 	void OnUpdate(Titan::Timestep ts) override
@@ -104,13 +106,17 @@ public:
 		Titan::Renderer::BeginScene(m_Camera);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+		std::dynamic_pointer_cast<Titan::OpenGLShader>(m_FlatColorShader)->Bind();
+		std::dynamic_pointer_cast<Titan::OpenGLShader>(m_FlatColorShader)->UploadUniformFloat3("u_Color", m_SquareColor);
+
 		for(int y = 0; y < 10; y++)
 		{
 			for(int x = 0; x < 10; x++)
 			{
 				glm::vec3 pos(y * 0.1f, x * 0.1f, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-				Titan::Renderer::Submit(m_BlueShader, m_SquareVA, transform);
+				Titan::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
 
@@ -121,7 +127,9 @@ public:
 
 	virtual void OnImGuiRender() override
 	{
-
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
+		ImGui::End();
 	}
 
 	void OnEvent(Titan::Event& event) override
@@ -134,7 +142,7 @@ public:
 		std::shared_ptr<Titan::Shader> m_Shader;
 		std::shared_ptr<Titan::VertexArray> m_VertexArray;
 
-		std::shared_ptr<Titan::Shader> m_BlueShader;
+		std::shared_ptr<Titan::Shader> m_FlatColorShader;
 		std::shared_ptr<Titan::VertexArray> m_SquareVA;
 
 		Titan::OrthographicCamera m_Camera;
@@ -143,6 +151,8 @@ public:
 
 		float m_CameraRotation = 0.0f;
 		float m_CameraRotationSpeed = 180.0f;
+
+		glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
 };
 
 class Sandbox : public Titan::Application
