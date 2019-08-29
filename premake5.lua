@@ -17,6 +17,7 @@ IncludeDir["GLFW"] = "Titan/thirdparty/GLFW/include"
 IncludeDir["Glad"] = "Titan/thirdparty/Glad/include"
 IncludeDir["ImGui"] = "Titan/thirdparty/imgui"
 IncludeDir["glm"] = "Titan/thirdparty/glm"
+IncludeDir["stb_image"] = "Titan/thirdparty/stb_image"
 
 group "Dependencies"
 	include "Titan/thirdparty/GLFW"
@@ -43,6 +44,8 @@ project "Titan"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/thirdparty/glm/glm/**.hpp",
 		"%{prj.name}/thirdparty/glm/glm/**.inl",
+		"%{prj.name}/thirdparty/stb_image/**.h",
+		"%{prj.name}/thirdparty/stb_image/**.cpp"
 	}
 
 	defines
@@ -57,7 +60,8 @@ project "Titan"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb_image}"
 	}
 
 	links 

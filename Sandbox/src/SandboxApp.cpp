@@ -38,17 +38,18 @@ public:
 
 		m_SquareVA.reset(Titan::VertexArray::Create());
 
-		float squareVertices[3 * 4] = {
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			 0.5f,  0.5f, 0.0f,
-			-0.5f,  0.5f, 0.0f
+		float squareVertices[5 * 4] = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
 		std::shared_ptr<Titan::VertexBuffer> squareVB;
 		squareVB.reset(Titan::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		squareVB->SetLayout({
-			{ Titan::ShaderDataType::Float3, "a_Position" }
+			{ Titan::ShaderDataType::Float3, "a_Position" },
+			{ Titan::ShaderDataType::Float2, "a_TexCoord" }
 			});
 		m_SquareVA->AddVertexBuffer(squareVB);
 
@@ -66,6 +67,16 @@ public:
 		std::string flatColorShaderFragmentSrc = "shaders/BlueShader.fs";
 
 		m_FlatColorShader.reset(Titan::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
+
+		std::string TextureShaderVertexSrc = "shaders/TextureShader.vs";
+		std::string TextureShaderFragmentSrc = "shaders/TextureShader.fs";
+
+		m_TextureShader.reset(Titan::Shader::Create(TextureShaderVertexSrc, TextureShaderFragmentSrc));
+		m_Texture = Titan::Texture2D::Create("assets/textures/checkerboard.png");
+
+		std::dynamic_pointer_cast<Titan::OpenGLShader>(m_TextureShader)->Bind();
+		std::dynamic_pointer_cast<Titan::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+
 	}
 
 	void OnUpdate(Titan::Timestep ts) override
@@ -121,6 +132,8 @@ public:
 		}
 
 		Titan::Renderer::Submit(m_Shader, m_VertexArray);
+		m_Texture->Bind();
+		Titan::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		Titan::Renderer::EndScene();
 	}
@@ -144,6 +157,9 @@ public:
 
 		std::shared_ptr<Titan::Shader> m_FlatColorShader;
 		std::shared_ptr<Titan::VertexArray> m_SquareVA;
+
+		std::shared_ptr<Titan::Shader> m_TextureShader;
+		std::shared_ptr<Titan::Texture2D> m_Texture;
 
 		Titan::OrthographicCamera m_Camera;
 		glm::vec3 m_CameraPosition;
