@@ -9,6 +9,8 @@ namespace Titan{
     public:
         OrthographicCamera(float left, float right, float bottom, float top);
 
+		void SetProjection(float left, float right, float bottom, float top);
+
         const glm::vec3& GetPosition() const { return m_Position; }
         void SetPosition(glm::vec3& position) { m_Position = position; RecalculateViewMatrix(); }
 
@@ -18,6 +20,7 @@ namespace Titan{
         const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
         const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+
 
     private:
         void RecalculateViewMatrix();

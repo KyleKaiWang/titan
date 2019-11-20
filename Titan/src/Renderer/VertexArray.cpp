@@ -7,12 +7,12 @@
 
 namespace Titan {
 
-	VertexArray* VertexArray::Create()
+	Ref<VertexArray> VertexArray::Create()
 	{
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None: TITAN_CORE_ASSERT(false, "RendererAPI::API::None is currently not supported!");
-			case RendererAPI::API::OpenGL: return new OpenGLVertexArray();
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexArray>();
 		}
 
 		TITAN_CORE_ASSERT(false, "Unknown RendererAPI!");

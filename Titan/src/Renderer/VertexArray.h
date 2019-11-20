@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "Renderer/Buffer.h"
+
 namespace Titan {
 
 	class VertexArray
@@ -17,7 +18,7 @@ namespace Titan {
 		virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const = 0;
 		virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
 		
-		static VertexArray* Create();
+		static std::shared_ptr<VertexArray> Create();
 
 		
 	};

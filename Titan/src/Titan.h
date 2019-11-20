@@ -13,7 +13,7 @@
 #include "ImGui/ImGuiLayer.h"
 
 // ---Entry Point---------------------
-#include "EntryPoint.h"
+//#include "EntryPoint.h"
 // -----------------------------------
 
 // ---Renderer------------------------
@@ -26,4 +26,5 @@
 #include "Renderer/VertexArray.h"
 
 #include "Renderer/OrthographicCamera.h"
+#include "Renderer/OrthographicCameraController.h"
 // -----------------------------------
