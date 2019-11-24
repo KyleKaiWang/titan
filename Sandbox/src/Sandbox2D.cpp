@@ -14,17 +14,17 @@ void Sandbox2D::OnAttach()
 
 	m_SquareVA = Titan::VertexArray::Create();
 
-	float squareVertices[5 * 4] = {
-		-0.5f, -0.5f, 0.0f, 
-		 0.5f, -0.5f, 0.0f, 
-		 0.5f,  0.5f, 0.0f, 
-		-0.5f,  0.5f, 0.0f 
+	float squareVertices[3 * 7] = {
+		-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+		 0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+		 0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
 	};
 
 	Titan::Ref<Titan::VertexBuffer> squareVB;
 	squareVB = Titan::VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 	squareVB->SetLayout({
-		{ Titan::ShaderDataType::Float3, "a_Position" }
+		{ Titan::ShaderDataType::Float3, "a_Position" },
+		{ Titan::ShaderDataType::Float4, "a_Color"}
 		});
 	m_SquareVA->AddVertexBuffer(squareVB);
 
@@ -37,6 +37,37 @@ void Sandbox2D::OnAttach()
 	std::string flatColorShaderFragmentSrc = "shaders/BlueShader.fs";
 
 	m_FlatColorShader = Titan::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc);
+
+	//--------------------------------------------------------------------------------------------------
+
+	float texVertices[5 * 4] = {
+		-0.2f, -0.2f, 0.0f, 0.0f, 0.0f,
+		 0.2f, -0.2f, 0.0f, 1.0f, 0.0f,
+		 0.2f,  0.2f, 0.0f, 1.0f, 1.0f,
+		-0.2f,  0.2f, 0.0f, 0.0f, 1.0f
+	};
+
+	m_VertexArray = Titan::VertexArray::Create();
+
+	Titan::Ref<Titan::VertexBuffer> textureVB;
+	textureVB = Titan::VertexBuffer::Create(texVertices, sizeof(texVertices));
+	textureVB->SetLayout({
+		{ Titan::ShaderDataType::Float3, "a_Position" },
+		{ Titan::ShaderDataType::Float2, "a_TexCoord" }
+	});
+
+	m_VertexArray->AddVertexBuffer(textureVB);
+	m_VertexArray->SetIndexBuffer(squareIB);
+
+	std::string TextureShaderVertexSrc = "shaders/TextureShader.vs";
+	std::string TextureShaderFragmentSrc = "shaders/TextureShader.fs";
+	
+	m_TextureShader = Titan::Shader::Create(TextureShaderVertexSrc, TextureShaderFragmentSrc);
+	m_Texture = Titan::Texture2D::Create("assets/textures/checkerboard.png");
+	
+	std::dynamic_pointer_cast<Titan::OpenGLShader>(m_TextureShader)->Bind();
+	std::dynamic_pointer_cast<Titan::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+	std::dynamic_pointer_cast<Titan::OpenGLShader>(m_TextureShader)->SetFloat4("u_Color", glm::vec4(1.0f));
 }
 
 void Sandbox2D::OnDetach()
@@ -58,6 +89,9 @@ void Sandbox2D::OnUpdate(Titan::Timestep ts)
 	std::dynamic_pointer_cast<Titan::OpenGLShader>(m_FlatColorShader)->Bind();
 	std::dynamic_pointer_cast<Titan::OpenGLShader>(m_FlatColorShader)->UploadUniformFloat3("u_Color", m_SquareColor);
 	Titan::Renderer::Submit(m_FlatColorShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
+	m_Texture->Bind();
+	Titan::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(0.5f), glm::vec3(1.5f)));
 
 	Titan::Renderer::EndScene();
 }
