@@ -65,6 +65,7 @@ namespace Titan {
 
 	void Renderer2D::EndScene()
 	{
+
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)

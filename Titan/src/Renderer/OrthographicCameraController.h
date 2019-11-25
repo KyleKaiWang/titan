@@ -9,7 +9,7 @@ namespace Titan {
 	class OrthographicCameraController
 	{
 	public:
-		OrthographicCameraController(float aspectRatio);
+		OrthographicCameraController(float aspectRatio, bool rotation);
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
@@ -22,6 +22,7 @@ namespace Titan {
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowResized(WindowResizeEvent& e);
 
+		bool m_TextureMode = true;
 	private:
 		OrthographicCamera m_Camera;
 		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
@@ -30,6 +31,8 @@ namespace Titan {
 		float m_CameraRotationSpeed = 180.0f;
 		float m_ZoomLevel = 1.0f;
 		float m_AspectRatio;
+		bool m_Rotation;
+
 		
 	};
 }
