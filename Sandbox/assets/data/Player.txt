@@ -1,0 +1,4 @@
+Transform
+0.0 0.0
+Sprite
+face2.jpg 0.0 0.0 1 1

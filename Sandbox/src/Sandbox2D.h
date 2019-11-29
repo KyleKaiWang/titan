@@ -14,16 +14,6 @@ public:
 	void OnEvent(Titan::Event& event) override;
 private:
 	Titan::OrthographicCameraController m_CameraController;
-
-	Titan::Ref<Titan::Shader> m_Shader;
-	Titan::Ref<Titan::VertexArray> m_VertexArray;
-
-	Titan::Ref<Titan::Shader> m_FlatColorShader;
-	Titan::Ref<Titan::VertexArray> m_SquareVA;
-
-	Titan::Ref<Titan::Shader> m_TextureShader;
-	Titan::Ref<Titan::Texture2D> m_Texture;
-
-	glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
+	Titan::Ref<Titan::Texture2D> m_CheckerboardTexture;
 
 };
