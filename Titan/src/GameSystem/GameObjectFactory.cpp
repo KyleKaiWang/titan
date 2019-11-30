@@ -2,6 +2,10 @@
 #include "GameObjectFactory.h"
 #include "GameObjectManager.h"
 
+#include "Transform.h"
+#include "Sprite.h"
+#include "Controller.h"
+
 extern GameObjectManager* gpGameObjectManager;
 
 GameObjectFactory::GameObjectFactory()
@@ -33,11 +37,11 @@ GameObject* GameObjectFactory::LoadObject(const char* pFileName)
 				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::TRANSFORM);
 			else if (0 == strcmp(componentType, "Sprite"))
 				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::SPRITE);
+			else if (0 == strcmp(componentType, "Controller"))
+				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::CONTROLLER);
 			/*else if (0 == strcmp(componentType, "UpDown"))
 				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::UP_DOWN);
-			else if (0 == strcmp(componentType, "Controller"))
-				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::CONTROLLER);*/
-            /*else if (0 == strcmp(componentType, "Body"))
+            else if (0 == strcmp(componentType, "Body"))
                 pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::BODY);*/
 
 			if (nullptr != pNewComponent)

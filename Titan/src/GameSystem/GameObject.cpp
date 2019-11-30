@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Sprite.h"
 #include "Transform.h"
+#include "Controller.h"
 //#include "UpDown.h"
 //#include "Body.h"
 
@@ -50,13 +51,14 @@ Component* GameObject::AddComponent(COMPONENT_TYPE Type)
 		pComponent = new Sprite();
 		break;
 
+	case COMPONENT_TYPE::CONTROLLER:
+		pComponent = new Controller();
+		break;
+
 	/*case COMPONENT_TYPE::UP_DOWN:
 		pComponent = new UpDown();
 		break;
 
-	case COMPONENT_TYPE::CONTROLLER:
-		pComponent = new Controller();
-		break;*/
             
 	/* case COMPONENT_TYPE::BODY:
         pComponent = new Body();

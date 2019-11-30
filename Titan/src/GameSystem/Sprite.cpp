@@ -1,9 +1,11 @@
 #include "tpch.h"
-#include "Sprite.h"
 #include <string>
 #include <memory>
 #include "ResourceManager.h"
 //#include "EventManager.h"
+#include "Sprite.h"
+#include "Transform.h"
+#include "GameObject.h"
 
 #include <glm/fwd.hpp>
 #include "Renderer/Renderer2D.h"
@@ -26,6 +28,12 @@ Sprite::~Sprite()
 
 void Sprite::Update()
 {	
+	if (mpOwner)
+	{
+		Transform* pTransform = static_cast<Transform*>(mpOwner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		if (pTransform)
+			m_Pos = glm::vec2(pTransform->m_PosX, pTransform->m_PosY);
+	}
 	if (m_Texture)
 		Draw();
 }
@@ -48,8 +56,17 @@ void Sprite::Serialize(FILE** fpp)
 	fullPath += textureName;
 
 	m_Texture = Titan::Texture2D::Create(fullPath.c_str());
-	m_Pos = glm::vec2(posX, posY);
 	m_Size = glm::vec2(scaleX, scaleY);
+	if (mpOwner)
+	{
+		Transform* pTransform = static_cast<Transform*>(mpOwner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		if (pTransform)
+			m_Pos = glm::vec2(pTransform->m_PosX, pTransform->m_PosY);
+	}
+	else
+	{
+		m_Pos = glm::vec2(posX, posY);
+	}
 
 	//gpEventManager->Subscribe(EVENT_TYPE::LATE, this->mpOwner);
 }
