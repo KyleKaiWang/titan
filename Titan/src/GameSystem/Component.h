@@ -8,7 +8,7 @@ enum class COMPONENT_TYPE
     SPRITE,
     CONTROLLER,
     UP_DOWN,
-    BODY
+    RIGIDBODY
 };
 
 class GameObject;
@@ -22,11 +22,11 @@ public:
     virtual void Update() = 0;
     virtual void Initialize() = 0;
     virtual void Serialize(FILE **fpp) = 0;
-    GameObject* mpOwner;
+    GameObject* m_Owner;
 
-    COMPONENT_TYPE GetType() const { return mType; }
+    COMPONENT_TYPE GetType() const { return m_Type; }
     virtual void HandleObjectEvent(ObjectEvent* pObjectEvent) {}
 
 private:
-    COMPONENT_TYPE mType;
+    COMPONENT_TYPE m_Type;
 };

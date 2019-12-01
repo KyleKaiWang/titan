@@ -3,8 +3,8 @@
 #include "Sprite.h"
 #include "Transform.h"
 #include "Controller.h"
+#include "Rigidbody.h"
 //#include "UpDown.h"
-//#include "Body.h"
 
 GameObject::GameObject()
 {
@@ -55,14 +55,15 @@ Component* GameObject::AddComponent(COMPONENT_TYPE Type)
 		pComponent = new Controller();
 		break;
 
+	case COMPONENT_TYPE::RIGIDBODY:
+        pComponent = new Rigidbody();
+        break;
+
 	/*case COMPONENT_TYPE::UP_DOWN:
 		pComponent = new UpDown();
 		break;
-
+	*/
             
-	/* case COMPONENT_TYPE::BODY:
-        pComponent = new Body();
-        break;*/
 
 	default:
 		//Warning
@@ -71,7 +72,7 @@ Component* GameObject::AddComponent(COMPONENT_TYPE Type)
 	if (pComponent)
 	{
 		m_Components.push_back(pComponent);
-		pComponent->mpOwner = this;
+		pComponent->m_Owner = this;
 	}
 	return pComponent;
 }

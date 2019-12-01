@@ -3,6 +3,6 @@
 
 Component::Component(COMPONENT_TYPE type)
 {
-	mpOwner = nullptr;
-    mType = type;
+	m_Owner = nullptr;
+    m_Type = type;
 }

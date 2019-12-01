@@ -28,9 +28,9 @@ Sprite::~Sprite()
 
 void Sprite::Update()
 {	
-	if (mpOwner)
+	if (m_Owner)
 	{
-		Transform* pTransform = static_cast<Transform*>(mpOwner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		Transform* pTransform = static_cast<Transform*>(m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		if (pTransform)
 			m_Pos = glm::vec2(pTransform->m_PosX, pTransform->m_PosY);
 	}
@@ -57,9 +57,9 @@ void Sprite::Serialize(FILE** fpp)
 
 	m_Texture = Titan::Texture2D::Create(fullPath.c_str());
 	m_Size = glm::vec2(scaleX, scaleY);
-	if (mpOwner)
+	if (m_Owner)
 	{
-		Transform* pTransform = static_cast<Transform*>(mpOwner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		Transform* pTransform = static_cast<Transform*>(m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		if (pTransform)
 			m_Pos = glm::vec2(pTransform->m_PosX, pTransform->m_PosY);
 	}
@@ -68,7 +68,7 @@ void Sprite::Serialize(FILE** fpp)
 		m_Pos = glm::vec2(posX, posY);
 	}
 
-	//gpEventManager->Subscribe(EVENT_TYPE::LATE, this->mpOwner);
+	//gpEventManager->Subscribe(EVENT_TYPE::LATE, this->m_Owner);
 }
 
 void Sprite::HandleObjectEvent(ObjectEvent* pObjectEvent)

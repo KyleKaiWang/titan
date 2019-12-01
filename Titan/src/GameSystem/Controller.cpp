@@ -25,28 +25,28 @@ Controller::~Controller()
 
 void Controller::Update()
 {
-	if (!mpOwner)
+	if (!m_Owner)
 		return;
 
-	Transform* pTransform = static_cast<Transform*>(mpOwner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	Transform* pTransform = static_cast<Transform*>(m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	if (!pTransform)
 		return;
 
 	if (Titan::Input::IsKeyPressed(TITAN_KEY_UP) || Titan::Input::IsKeyPressed(TITAN_KEY_W))
 	{
-		pTransform->m_PosY += 0.1;
+		pTransform->m_PosY += 0.1f;
 	}
 	else if (Titan::Input::IsKeyPressed(TITAN_KEY_DOWN) || Titan::Input::IsKeyPressed(TITAN_KEY_S))
 	{
-		pTransform->m_PosY -= 0.1;
+		pTransform->m_PosY -= 0.1f;
 	}
 	else if(Titan::Input::IsKeyPressed(TITAN_KEY_RIGHT) || Titan::Input::IsKeyPressed(TITAN_KEY_D))
 	{
-		pTransform->m_PosX += 0.1;
+		pTransform->m_PosX += 0.1f;
 	}
 	else if (Titan::Input::IsKeyPressed(TITAN_KEY_LEFT) || Titan::Input::IsKeyPressed(TITAN_KEY_A))
 	{
-		pTransform->m_PosX -= 0.1;
+		pTransform->m_PosX -= 0.1f;
 	}
 }
 
