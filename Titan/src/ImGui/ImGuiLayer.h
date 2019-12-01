@@ -20,8 +20,12 @@ namespace Titan {
 		void Begin();
 		void End();
 
+		inline bool GetIsVisibleImgui() const{ return m_IsVisibleImgui; }
+		inline bool SetIsVisibleImgui(bool visible) { m_IsVisibleImgui = visible; }
+		
 	private:
 		float m_Time = 0.0f;
+		bool m_IsVisibleImgui = false;
 	};
 	
 }

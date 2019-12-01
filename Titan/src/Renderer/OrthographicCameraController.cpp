@@ -14,7 +14,7 @@ namespace Titan {
 
 	void OrthographicCameraController::OnUpdate(Timestep ts)
 	{
-		if (Input::IsKeyPressed(TITAN_KEY_RIGHT) || Input::IsKeyPressed(TITAN_KEY_D))
+		/*if (Input::IsKeyPressed(TITAN_KEY_RIGHT) || Input::IsKeyPressed(TITAN_KEY_D))
 		{
 			m_CameraPosition.x -= cos(glm::radians(m_CameraRotation)) * m_CameraMoveSpeed * ts;
 			m_CameraPosition.y -= sin(glm::radians(m_CameraRotation)) * m_CameraMoveSpeed * ts;
@@ -34,7 +34,7 @@ namespace Titan {
 		{
 			m_CameraPosition.x -= -sin(glm::radians(m_CameraRotation)) * m_CameraMoveSpeed * ts;
 			m_CameraPosition.y -= cos(glm::radians(m_CameraRotation)) * m_CameraMoveSpeed * ts;
-		}
+		}*/
 
 		if (m_Rotation)
 		{

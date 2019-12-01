@@ -86,9 +86,11 @@ namespace Titan {
 	}
 
 	void ImGuiLayer::OnImGuiRender()
-	{
-		static bool show = true;			
-		ImGui::ShowDemoWindow(&show);
+	{		
+		//TODO: bug in Imgui demo, should be removed
+
+		//bool show = GetIsVisibleImgui();
+		//ImGui::ShowDemoWindow(&show);
 	}
 }
 
