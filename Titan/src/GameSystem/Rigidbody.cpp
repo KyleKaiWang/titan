@@ -6,6 +6,8 @@
 #include "tpch.h"
 #include "Shape.h"
 
+extern ObjectEventManager* gpObjectEventManager;
+
 Rigidbody::Rigidbody()
     : Component(COMPONENT_TYPE::RIGIDBODY)
 {
@@ -66,6 +68,14 @@ void Rigidbody::Integrate(float Gravity, float DeltaTime)
 	
 }
 
+void Rigidbody::HandleObjectEvent(ObjectEvent* objectEvent)
+{
+	if (objectEvent->GetObjectEventType() == OBJECT_EVENT_TYPE::COLLIDE)
+	{
+		TITAN_INFO("Rigidbody : Trigger collide event!");
+	}
+}
+
 void Rigidbody::AddShape(Shape* shape)
 {
 	m_Shape = shape;
@@ -102,5 +112,6 @@ void Rigidbody::Serialize(FILE** fpp)
         ShapeAABB* pAABB = static_cast<ShapeAABB*>(m_Shape);
 		fscanf_s(*fpp, "%f %f\n", &pAABB->m_Width, &pAABB->m_Height);
     }
+	gpObjectEventManager->Subscribe(OBJECT_EVENT_TYPE::COLLIDE, m_Owner);
 }
 

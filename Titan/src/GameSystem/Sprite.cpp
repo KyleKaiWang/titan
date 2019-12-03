@@ -1,17 +1,12 @@
 #include "tpch.h"
 #include <string>
-#include <memory>
-#include "ResourceManager.h"
-//#include "EventManager.h"
+#include "tpch.h"
 #include "Sprite.h"
 #include "Transform.h"
 #include "GameObject.h"
 
 #include <glm/fwd.hpp>
 #include "Renderer/Renderer2D.h"
-
-//extern EventManager* gpEventManager;
-extern ResourceManager* gpResourceManager;
 
 Sprite::Sprite() 
 	:Component(COMPONENT_TYPE::SPRITE)
@@ -67,16 +62,9 @@ void Sprite::Serialize(FILE** fpp)
 	{
 		m_Pos = glm::vec2(posX, posY);
 	}
-
-	//gpEventManager->Subscribe(EVENT_TYPE::LATE, this->m_Owner);
 }
 
 void Sprite::HandleObjectEvent(ObjectEvent* pObjectEvent)
 {
-	/*if (pEvent->mEventType == EVENT_TYPE::LATE)
-	{
-		std::string fullPath = "..\\Resources\\face_punched.bmp";
-		mpSurface = gpResourceManager->LoadSurface(fullPath.c_str());
-	}*/
 }
 

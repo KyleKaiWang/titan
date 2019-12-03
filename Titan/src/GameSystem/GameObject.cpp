@@ -77,10 +77,10 @@ Component* GameObject::AddComponent(COMPONENT_TYPE Type)
 	return pComponent;
 }
 
-void GameObject::HandleObjectEvent(ObjectEvent* pObjectEvent)
+void GameObject::HandleObjectEvent(ObjectEvent* objectEvent)
 {
 	for (auto pComp : m_Components)
 	{
-		pComp->HandleObjectEvent(pObjectEvent);
+		pComp->HandleObjectEvent(objectEvent);
 	}
 }

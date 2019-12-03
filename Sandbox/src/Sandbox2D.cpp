@@ -6,10 +6,13 @@
 
 #include "GameSystem/GameObjectFactory.h"
 #include "GameSystem/GameObjectManager.h"
+#include "GameSystem/EventManager.h"
 #include "GameSystem/Physics.h"
 
 GameObjectFactory* gpGameObjectFactory;
 GameObjectManager* gpGameObjectManager;
+CollisionManager* gpCollisionManager;
+ObjectEventManager* gpObjectEventManager;
 Physics* gpPhysics;
 
 Sandbox2D::Sandbox2D()
@@ -24,6 +27,8 @@ void Sandbox2D::OnAttach()
 	//Game System
 	gpGameObjectFactory = new GameObjectFactory();
 	gpGameObjectManager = new GameObjectManager();
+	gpCollisionManager = new CollisionManager();
+	gpObjectEventManager = new ObjectEventManager();
 	gpPhysics = new Physics();
 
 	//Start Level
@@ -35,6 +40,7 @@ void Sandbox2D::OnDetach()
 	//Delete Game System
 	delete gpGameObjectFactory;
 	delete gpGameObjectManager;
+	delete gpObjectEventManager;
 	delete gpPhysics;
 }
 

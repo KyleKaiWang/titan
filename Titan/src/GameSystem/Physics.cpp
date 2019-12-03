@@ -3,15 +3,15 @@
 #include "Transform.h"
 #include "Rigidbody.h"
 #include "GameObjectManager.h"
-//#include "EventManager.h"
+#include "EventManager.h"
 
 extern GameObjectManager* gpGameObjectManager;
-CollisionManager* gpCollisionManager;
-//extern EventManager *gpEventManager;
+extern CollisionManager* gpCollisionManager;
+extern ObjectEventManager* gpObjectEventManager;
 
 Physics::Physics()
 {
-	gpCollisionManager = new CollisionManager();
+
 }
 
 Physics::~Physics()
@@ -51,28 +51,21 @@ void Physics::Update(float frameTime)
 			{
 				bool collide = gpCollisionManager->CheckCollisionAndGenerateContact(pBody1->m_Shape, pTransform1->m_PosX, pTransform1->m_PosY, pBody2->m_Shape, pTransform2->m_PosX, pTransform2->m_PosY);
 				if (collide)
+				{
 					TITAN_CORE_INFO("Collide! {0} {1} {2} {3}", "Obj1:", pBody1->m_Shape->m_Type, "Obj2", pBody2->m_Shape->m_Type);
+				}
 			}
         }
     }
 
-    /*for(auto pContact : gpCollisionManager->mContacts)
+
+    for(auto pContact : gpCollisionManager->m_Contacts)
     {
         CollideEvent collideEvent;
         
-        pContact->m_Rigidbody[0]->m_Owner->HandleEvent(&collideEvent);
-        pContact->m_Rigidbody[1]->m_Owner->HandleEvent(&collideEvent);
-    }*/
-    
-    //TO DO
-    /*for(GameObject* pObj : gpGameObjectManager->mGameObjects)
-    {
-        Rigidbody* pBo = static_cast<Rigidbody*>(pObj->GetComponent(COMPONENT_TYPE::BODY));
-        Transform* pTr = static_cast<Transform*>(pObj->GetComponent(COMPONENT_TYPE::TRANSFORM));
-        if(pBo && pTr)
-            pTr->mPosX = pBo->mPosX;
-        pTr->mPosY = pBo->mPosY;
-    }*/
+        pContact->m_Rigibodies[0]->m_Owner->HandleObjectEvent(&collideEvent);
+        pContact->m_Rigibodies[1]->m_Owner->HandleObjectEvent(&collideEvent);
+    }
 }
 
 bool CheckCollisionCircleCircle(Shape* pShape1, float PosX1, float PosY1, Shape* pShape2, float PosX2, float PosY2, std::list<Contact*>& Contacts)

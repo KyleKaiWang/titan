@@ -50,6 +50,14 @@ void Controller::Update()
 	}
 }
 
+void Controller::HandleObjectEvent(ObjectEvent* objectEvent)
+{
+	if (objectEvent->GetObjectEventType() == OBJECT_EVENT_TYPE::COLLIDE)
+	{
+		TITAN_INFO("Controller : Collide event!");
+	}
+}
+
 //void Controller::HandleObjectEvent(ObjectEvent* pObjectEvent)
 //{
 //    printf("I HAVE CALLED!!\n");

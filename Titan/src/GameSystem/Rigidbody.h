@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.h"
+#include "EventManager.h"
 class Shape;
 class Rigidbody : public Component
 {
@@ -11,6 +12,7 @@ public:
     void Serialize(FILE** fpp);
     void Initialize();
     void Integrate(float gravity, float deltaTime);
+	void HandleObjectEvent(ObjectEvent* objectEvent);
 
 	void AddShape(Shape* shape);
     
@@ -24,3 +26,4 @@ public:
     
     Shape* m_Shape;
 };
+

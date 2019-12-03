@@ -16,7 +16,7 @@ class GameObject;
 class Component
 {
 public:
-    Component(COMPONENT_TYPE Type);
+    Component(COMPONENT_TYPE type);
     virtual ~Component() { }
 
     virtual void Update() = 0;
@@ -25,7 +25,7 @@ public:
     GameObject* m_Owner;
 
     COMPONENT_TYPE GetType() const { return m_Type; }
-    virtual void HandleObjectEvent(ObjectEvent* pObjectEvent) {}
+    virtual void HandleObjectEvent(ObjectEvent* objectEvent) {}
 
 private:
     COMPONENT_TYPE m_Type;
