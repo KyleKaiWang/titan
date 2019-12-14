@@ -9,10 +9,8 @@ namespace Titan {
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
 	{
-		//OpenGL 4.5 only
-		//glCreateBuffers(1, &m_RendererID);
-
-		glGenBuffers(1, &m_RendererID);
+		//OpenGL 4.5
+		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 	}
@@ -37,10 +35,8 @@ namespace Titan {
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		//OpenGL 4.5 only
-		//glCreateBuffers(1, &m_RendererID);
-
-		glGenBuffers(1, &m_RendererID);
+		//OpenGL 4.5
+		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 	}

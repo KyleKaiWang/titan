@@ -24,7 +24,7 @@ namespace Titan {
 			case ShaderDataType::Bool:   return 1;
 		}
 
-		TITAN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+		//TITAN_CORE_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -60,7 +60,7 @@ namespace Titan {
 			case ShaderDataType::Bool:   return 1;
 			}
 			
-			TITAN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+			//TITAN_CORE_ASSERT(false, "Unknown ShaderDataType!");
 			return 0;
 		}
 	};
