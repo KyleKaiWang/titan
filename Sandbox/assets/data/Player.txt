@@ -1,7 +1,12 @@
+ClassType
+GameObject
+Tag
+Player
 Transform
+0 0
 Sprite
-face2.jpg 0.0 0.0 1 1
+ship.png 0.0 0.0 0.5 0.5
 Controller
 Rigidbody
 AABB
-1 1
+0.7 0.7

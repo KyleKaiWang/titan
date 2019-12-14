@@ -1,0 +1,13 @@
+ClassType
+AI
+AICategory
+2
+Tag
+AI
+Transform
+0.5 0.5
+Sprite
+enemy2.png 0.5 0.5 1 1
+Rigidbody
+AABB
+0.8 0.8
