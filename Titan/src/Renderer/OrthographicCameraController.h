@@ -18,6 +18,7 @@ namespace Titan {
 		const OrthographicCamera& GetCamera() const { return m_Camera; }
 		float GetZoomLevel() const { return m_ZoomLevel; }
 		void SetZoomLevel(float level) { m_ZoomLevel = level; }
+		float GetAspectRatio() const { return m_AspectRatio; }
 
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowResized(WindowResizeEvent& e);
@@ -29,10 +30,8 @@ namespace Titan {
 		float m_CameraRotation = 0.0f;
 		float m_CameraMoveSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;
-		float m_ZoomLevel = 1.0f;
+		float m_ZoomLevel = 10.0f;
 		float m_AspectRatio;
 		bool m_Rotation;
-
-		
 	};
 }

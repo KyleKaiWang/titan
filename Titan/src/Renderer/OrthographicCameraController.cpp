@@ -36,7 +36,7 @@ namespace Titan {
 			m_CameraPosition.y -= cos(glm::radians(m_CameraRotation)) * m_CameraMoveSpeed * ts;
 		}*/
 
-		if (m_Rotation)
+		/*if (m_Rotation)
 		{
 			if (Input::IsKeyPressed(TITAN_KEY_E))
 				m_CameraRotation += m_CameraRotationSpeed * ts;
@@ -49,7 +49,7 @@ namespace Titan {
 				m_CameraRotation += 360.0f;
 
 			m_Camera.SetRotation(m_CameraRotation);
-		}
+		}*/
 
 		m_Camera.SetPosition(m_CameraPosition);
 
@@ -67,9 +67,9 @@ namespace Titan {
 
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrolledEvent& e)
 	{
-		m_ZoomLevel -= e.GetYOffset() * 0.25f;
-		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
-		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+		//m_ZoomLevel -= e.GetYOffset() * 0.25f;
+		//m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		//m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		return false;
 	}
 

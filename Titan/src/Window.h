@@ -13,8 +13,8 @@ namespace Titan {
 		unsigned int Height;
 		
 		WindowProps(const std::string& title = "Titan",
-			unsigned int width = 1280,
-			unsigned int height = 720)
+			unsigned int width = 720,
+			unsigned int height = 1280)
 			:Title(title), Width(width), Height(height)
 		{
 
