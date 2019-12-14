@@ -2,10 +2,13 @@
 #include "Transform.h"
 
 Transform::Transform() 
-	:Component(COMPONENT_TYPE::TRANSFORM)
+	:Component(CompoentType::TRANSFORM)
 {
-    m_PosX = 0;
-    m_PosY = 0;
+    m_PosX = 0.0f;
+    m_PosY = 0.0f;
+	m_Rotate = 0.0f; 
+	m_Velocity = glm::vec3(0.0f);
+	m_Movement = false;
 }
 
 Transform::~Transform()
@@ -15,10 +18,16 @@ Transform::~Transform()
 
 void Transform::Serialize(FILE** fpp)
 {
-	fscanf_s(*fpp, "%f %f\n", &m_PosX, &m_PosY);
+	int movement = 0;
+	fscanf_s(*fpp, "%f %f %f %i\n", &m_PosX, &m_PosY, &m_Rotate, &movement);
+	m_Movement = movement;
 }
 
-void Transform::Update()
+void Transform::Update(float frameTime)
 {
-
+	if (m_Movement)
+	{
+		m_PosX += m_Velocity.x * frameTime;
+		m_PosY += m_Velocity.y * frameTime;
+	}
 }

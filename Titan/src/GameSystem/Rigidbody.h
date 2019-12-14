@@ -1,6 +1,5 @@
 #pragma once
 #include "Component.h"
-#include "EventManager.h"
 class Shape;
 class Rigidbody : public Component
 {
@@ -8,11 +7,11 @@ public:
     Rigidbody();
     ~Rigidbody();
     
-    void Update() {}
+    void Update(float frameTime) {}
     void Serialize(FILE** fpp);
     void Initialize();
     void Integrate(float gravity, float deltaTime);
-	void HandleObjectEvent(ObjectEvent* objectEvent);
+	void HandleObjectEvent(ObjectEventType eventType);
 
 	void AddShape(Shape* shape);
     
@@ -23,7 +22,10 @@ public:
     float mAccX, mAccY;
     float mTotalForceX, mTotalForceY;
     float mMass, mInvMass;*/
-    
+	bool Immune = false;
+	bool CanBounce = false;
+	bool IgnoreSameTag = true;
+	bool DrawDebugCollision = false;
     Shape* m_Shape;
 };
 

@@ -1,24 +1,16 @@
+#include "tpch.h"
 #include "Rigidbody.h"
 #include "Transform.h"
+#include "Sprite.h"
 #include "GameObject.h"
-//#include "CollisionManager.h"
+#include "GameObjectManager.h"
 
-#include "tpch.h"
 #include "Shape.h"
-
-extern ObjectEventManager* gpObjectEventManager;
+extern GameObjectManager* gpGameObjectManager;
 
 Rigidbody::Rigidbody()
-    : Component(COMPONENT_TYPE::RIGIDBODY)
+    : Component(CompoentType::RIGIDBODY)
 {
-    /*mPosX = 0;
-    mPosY = 0;
-    mPrevPosX = mPrevPosY = 0.0f;
-    mVelX = mVelY = 0.0f;
-    mAccX = mAccY = 0.0f;
-    mTotalForceX =  mTotalForceY = 0.0f;
-    mMass = mInvMass= 0.0f;*/
-    
 	m_Shape = nullptr;
 }
 
@@ -30,49 +22,21 @@ Rigidbody::~Rigidbody()
 
 void Rigidbody::Initialize()
 {
-    /*Transform* pTransform = static_cast<Transform*>(m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
-    if(pTransform)
-        mPrevPosX = mPosX = pTransform->mPosX;
-        mPrevPosY = mPosY = pTransform->mPosY;*/
 }
 
 void Rigidbody::Integrate(float Gravity, float DeltaTime)
 {
-		//mPrevPosX = mPosX;
-		//mPrevPosY = mPosY;
-
-		//mTotalForceY += Gravity;
-
-		////Acceleration
-		//mAccX = mTotalForceX * mInvMass;
-		//mAccY = mTotalForceY * mInvMass;
-
-		////Velocity
-		//mVelX = mAccX * DeltaTime + mVelX;
-		//mVelY = mAccY * DeltaTime + mVelY;
-
-		//mPosX = mVelX * DeltaTime + mPosX;
-		//mPosY = mVelY * DeltaTime + mPosY;
-
-		////Clear Force
-		//mTotalForceX = mTotalForceY = 0.0f;
-
-		////Update the owner's transform component
-		//Transform* pTransform = static_cast<Transform*>(m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-		//if (pTransform)
-		//{
-		//	pTransform->m_PosX = mPosX;
-		//	pTransform->m_PosY = mPosY;
-		//}
-	
 }
 
-void Rigidbody::HandleObjectEvent(ObjectEvent* objectEvent)
+void Rigidbody::HandleObjectEvent(ObjectEventType eventType)
 {
-	if (objectEvent->GetObjectEventType() == OBJECT_EVENT_TYPE::COLLIDE)
+	if (eventType == ObjectEventType::COLLIDE)
 	{
 		TITAN_INFO("Rigidbody : Trigger collide event!");
+
+		//TODO: Hidden Sprite, destroy object 
+		if(!m_Owner->Destroyed)
+			gpGameObjectManager->DestroyGameObject(m_Owner->GetGameID());
 	}
 }
 
@@ -83,14 +47,6 @@ void Rigidbody::AddShape(Shape* shape)
 
 void Rigidbody::Serialize(FILE** fpp)
 {
-    /*float mMass = 0;
-    fscanf_s(*fpp, "%f\n", &mMass);
-    
-    if(mMass != 0.0f)
-        mInvMass = 1.0f / mMass;
-    else
-        mInvMass = 0.0f;*/
-    
     char shapeType[256];
     memset(shapeType, 0, 256 * sizeof(char));
     
@@ -112,6 +68,5 @@ void Rigidbody::Serialize(FILE** fpp)
         ShapeAABB* pAABB = static_cast<ShapeAABB*>(m_Shape);
 		fscanf_s(*fpp, "%f %f\n", &pAABB->m_Width, &pAABB->m_Height);
     }
-	gpObjectEventManager->Subscribe(OBJECT_EVENT_TYPE::COLLIDE, m_Owner);
 }
 

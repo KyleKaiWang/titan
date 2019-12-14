@@ -5,6 +5,9 @@
 #include "Transform.h"
 #include "Sprite.h"
 #include "Controller.h"
+#include "Rigidbody.h"
+
+#include <unordered_map>
 
 extern GameObjectManager* gpGameObjectManager;
 
@@ -16,44 +19,89 @@ GameObjectFactory::~GameObjectFactory()
 {
 }
 
-GameObject* GameObjectFactory::LoadObject(const char* pFileName)
+GameObject* GameObjectFactory::LoadObjectFromFile(const char* pFileName)
 {
 	GameObject* pNewObject = nullptr;
 	FILE* fp;
 	fopen_s(&fp, pFileName, "r");
 	if (fp)
 	{
-		pNewObject = new GameObject();
-
 		while (!feof(fp))
 		{
-			char componentType[256];
-			memset(componentType, 0, sizeof(char));
+			char stringBuffer[256];
+			memset(stringBuffer, 0, sizeof(char));
+			fscanf_s(fp, "%255s", stringBuffer, sizeof(stringBuffer));
 
-			fscanf_s(fp, "%255s", componentType, sizeof(componentType));
+			//Check Class Type
+			//if (0 == strcmp(stringBuffer, "ClassType"))
+			//{
+			//	char className[256];
+			//	memset(className, 0, 256 * sizeof(char));
+			//	fscanf_s(fp, "%255s", className, sizeof(className));
+			//
+			//	if (0 == strcmp(className, "GameObject"))
+			//	{
+			//		pNewObject = new GameObject();
+			//	}
+			//	else if (0 == strcmp(className, "AI"))
+			//	{
+			//		pNewObject = new AI();
+			//		pNewObject->Serialize(&fp);
+			//	}
+			//	else if (0 == strcmp(className, "Bullet"))
+			//	{
+			//		pNewObject = new Bullet();
+			//	}
+			//}
 
+			//Check Components
 			Component* pNewComponent = nullptr;
-			if (0 == strcmp(componentType, "Transform"))
-				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::TRANSFORM);
-			else if (0 == strcmp(componentType, "Sprite"))
-				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::SPRITE);
-			else if (0 == strcmp(componentType, "Controller"))
-				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::CONTROLLER);
-            else if (0 == strcmp(componentType, "Rigidbody"))
-                pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::RIGIDBODY);
-			/*else if (0 == strcmp(componentType, "UpDown"))
-				pNewComponent = pNewObject->AddComponent(COMPONENT_TYPE::UP_DOWN);*/
+			if (0 == strcmp(stringBuffer, "Transform"))
+				pNewComponent = ComponentTypeHandler(CompoentType::TRANSFORM);
+			else if (0 == strcmp(stringBuffer, "Sprite"))
+				pNewComponent = ComponentTypeHandler(CompoentType::SPRITE);
+			else if (0 == strcmp(stringBuffer, "Controller"))
+				pNewComponent = ComponentTypeHandler(CompoentType::CONTROLLER);
+			else if (0 == strcmp(stringBuffer, "Rigidbody"))
+				pNewComponent = ComponentTypeHandler(CompoentType::RIGIDBODY);
 
-			if (nullptr != pNewComponent)
+			if (!pNewObject)
+				return nullptr;
+
+			if (pNewComponent)
+			{
+				pNewObject->AddComponent(pNewComponent);
 				pNewComponent->Serialize(&fp);
+			}
+
+			//Check Tag
+			if (0 == strcmp(stringBuffer, "Tag"))
+			{
+				char tagName[256];
+				memset(tagName, 0, 256 * sizeof(char));
+
+				fscanf_s(fp, "%255s\n", tagName, sizeof(tagName));
+
+				pNewObject->SetTag(tagName);
+			}
 		}
 		fclose(fp);
+
+		if (!pNewObject)
+			return nullptr;
+		else
+		{
+			pNewObject->SetGameID(++gpGameObjectManager->s_NextGameID);
+			pNewObject->Initialize();
+			gpGameObjectManager->m_GameObjects.push_back(pNewObject);
+
+			return pNewObject;
+		}
 	}
-	gpGameObjectManager->m_GameObjects.push_back(pNewObject);
-	return pNewObject;
+	return nullptr;
 }
 
-void GameObjectFactory::LoadLevel(const char* pFileName)
+void GameObjectFactory::LoadLevelFromFile(const char* pFileName)
 {
 	FILE* fp;
 	fopen_s(&fp, pFileName, "r");
@@ -70,12 +118,49 @@ void GameObjectFactory::LoadLevel(const char* pFileName)
 			std::string fullpath = "../Sandbox/assets/data/";
 			fullpath += archetypeName;
 
-			GameObject* pNewGameObject = LoadObject(fullpath.c_str());
+			GameObject* pNewGameObject = LoadObjectFromFile(fullpath.c_str());
 
-			Transform* pTransform = static_cast<Transform*>(pNewGameObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			//Initialize each game object's first position by level data
+			Transform* pTransform = static_cast<Transform*>(pNewGameObject->GetComponent(CompoentType::TRANSFORM));
 			pTransform->Serialize(&fp);
-            pNewGameObject->Initialize();
+           
 		}
 		fclose(fp);
 	}
+}
+
+GameObject* GameObjectFactory::CreateGameObject(const char* pFileName)
+{
+	GameObject* pNewGameObject = LoadObjectFromFile(pFileName);
+	return pNewGameObject;
+}
+
+Component* GameObjectFactory::ComponentTypeHandler(CompoentType componentType)
+{
+	Component* pComponent = nullptr;
+
+	switch (componentType)
+	{
+		case CompoentType::CONTROLLER :
+		{
+			pComponent = new Controller();
+			break;
+		}
+		case CompoentType::TRANSFORM:
+		{
+			pComponent = new Transform();
+			break;
+		}
+		case CompoentType::SPRITE:
+		{
+			pComponent = new Sprite();
+			break;
+		}
+		case CompoentType::RIGIDBODY:
+		{
+			pComponent = new Rigidbody();
+			break;
+		}
+	}
+	return pComponent;
 }

@@ -4,15 +4,18 @@
 #include "Transform.h"
 #include "Controller.h"
 #include "Rigidbody.h"
-//#include "UpDown.h"
 
 GameObject::GameObject()
 {
+	m_LifeSpan = -1.0f;
 }
      
 GameObject::~GameObject()
 {
+	for (auto comp: m_Components)
+		delete comp;
 
+	m_Components.clear();
 }
 
 void GameObject::Initialize()
@@ -21,13 +24,13 @@ void GameObject::Initialize()
         pComp->Initialize();
 }
 
-void GameObject::Update()
+void GameObject::Update(float timeStep)
 {
 	for (auto pComp : m_Components)
-		pComp->Update();
+		pComp->Update(timeStep);
 }
 
-Component* GameObject::GetComponent(COMPONENT_TYPE Type)
+Component* GameObject::GetComponent(CompoentType Type)
 {
     for (auto pComp : m_Components)
     {   
@@ -38,35 +41,28 @@ Component* GameObject::GetComponent(COMPONENT_TYPE Type)
     
 }
 
-Component* GameObject::AddComponent(COMPONENT_TYPE Type)
+Component* GameObject::AddComponent(CompoentType Type)
 {
 	Component* pComponent = nullptr;
 	switch (Type)
 	{
-	case COMPONENT_TYPE::TRANSFORM:
+	case CompoentType::TRANSFORM:
 		pComponent = new Transform();
 		break;
 
-	case COMPONENT_TYPE::SPRITE:
+	case CompoentType::SPRITE:
 		pComponent = new Sprite();
 		break;
 
-	case COMPONENT_TYPE::CONTROLLER:
+	case CompoentType::CONTROLLER:
 		pComponent = new Controller();
 		break;
 
-	case COMPONENT_TYPE::RIGIDBODY:
+	case CompoentType::RIGIDBODY:
         pComponent = new Rigidbody();
         break;
 
-	/*case COMPONENT_TYPE::UP_DOWN:
-		pComponent = new UpDown();
-		break;
-	*/
-            
-
 	default:
-		//Warning
 		break;
 	}
 	if (pComponent)
@@ -77,10 +73,44 @@ Component* GameObject::AddComponent(COMPONENT_TYPE Type)
 	return pComponent;
 }
 
-void GameObject::HandleObjectEvent(ObjectEvent* objectEvent)
+void GameObject::AddComponent(Component* component)
 {
+	m_Components.push_back(component);
+	component->m_Owner = this;
+}
+
+void GameObject::HandleObjectEvent(ObjectEventType eventType)
+{
+	//if (objectEvent->GetObjectEventType() == OBJECT_EVENT_TYPE::COLLIDE)
+	//{
+	//	FlagDestroyed();
+	//}
+
 	for (auto pComp : m_Components)
 	{
-		pComp->HandleObjectEvent(objectEvent);
+		if(!Destroyed)
+			pComp->HandleObjectEvent(eventType);
 	}
 }
+
+float GameObject::GetPosX()
+{
+	Transform* pTransform = static_cast<Transform*>(GetComponent(CompoentType::TRANSFORM));
+	if(pTransform)
+		return pTransform->m_PosX;
+	return 0.0f;
+}
+
+float GameObject::GetPosY()
+{
+	Transform* pTransform = static_cast<Transform*>(GetComponent(CompoentType::TRANSFORM));
+	if (pTransform)
+		return pTransform->m_PosY;
+	return 0.0f;
+}
+
+void GameObject::FlagDestroyed()
+{
+	Destroyed = true;
+}
+

@@ -1,6 +1,5 @@
 #pragma once
 #include "Component.h"
-#include "EventManager.h"
 
 class GameObject;
 
@@ -10,16 +9,10 @@ public:
 	Controller();
 	~Controller();
 	
-	void Update();
+	void Update(float timeStep);
 	virtual void Serialize(FILE** fpp) {}
     void Initialize() {}
-    void HandleObjectEvent(ObjectEvent* objectEvent);
+    void HandleObjectEvent(ObjectEventType eventType);
+
 };
 
-//class PlayerHitEvent : public ObjectEvent
-//{
-//public:
-//	PlayerHitEvent() : ObjectEvent(OBJECT_EVENT_TYPE::PLAYER_HIT) {}
-//	PlayerHitEvent(ObjectEvent* pObjectEvent);
-//    ~PlayerHitEvent();
-//};

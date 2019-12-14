@@ -1,70 +1,66 @@
 #include "tpch.h"
-#include "Physics.h"
+#include "PhysicsManager.h"
 #include "Transform.h"
 #include "Rigidbody.h"
 #include "GameObjectManager.h"
-#include "EventManager.h"
 
 extern GameObjectManager* gpGameObjectManager;
 extern CollisionManager* gpCollisionManager;
-extern ObjectEventManager* gpObjectEventManager;
 
-Physics::Physics()
+PhysicsManager::PhysicsManager()
 {
 
 }
 
-Physics::~Physics()
+PhysicsManager::~PhysicsManager()
 {
 }
 
-void Physics::Update(float frameTime)
-{
-    /*for(GameObject* pObj : gpGameObjectManager->m_GameObjects)
-    {
-        Rigidbody* pBody = (Rigidbody*)static_cast<Rigidbody*>(pObj->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-        if(pBody)
-			pBody->Integrate(200.0f, frameTime);
-    }*/
-    
+void PhysicsManager::Update(float frameTime)
+{   
 	gpCollisionManager->Reset();
     
     auto pObject1 = gpGameObjectManager->m_GameObjects.begin();
     auto pObjectLast = gpGameObjectManager->m_GameObjects.end();
     
     for(; pObject1 != pObjectLast; ++pObject1)
-    {
-        Rigidbody* pBody1 = static_cast<Rigidbody*>((*pObject1)->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+    {	
+        Rigidbody* pBody1 = static_cast<Rigidbody*>((*pObject1)->GetComponent(CompoentType::RIGIDBODY));
         if(!pBody1)
             continue;
         
         for(auto pObject2 = pObject1 + 1; pObject2 != pObjectLast; ++pObject2)
         {
-            Rigidbody* pBody2 = static_cast<Rigidbody*>((*pObject2)->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-            
+            Rigidbody* pBody2 = static_cast<Rigidbody*>((*pObject2)->GetComponent(CompoentType::RIGIDBODY));
             if(!pBody2)
                 continue;
+
+			if (pBody1->IgnoreSameTag)
+			{
+				if ((*pObject1)->GetTag() == (*pObject2)->GetTag())
+				{
+					continue;
+				}
+			}
 			
-			Transform* pTransform1 = static_cast<Transform*>(pBody1->m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			Transform* pTransform2 = static_cast<Transform*>(pBody2->m_Owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			Transform* pTransform1 = static_cast<Transform*>(pBody1->m_Owner->GetComponent(CompoentType::TRANSFORM));
+			Transform* pTransform2 = static_cast<Transform*>(pBody2->m_Owner->GetComponent(CompoentType::TRANSFORM));
 			if (pTransform1 && pTransform2)
 			{
 				bool collide = gpCollisionManager->CheckCollisionAndGenerateContact(pBody1->m_Shape, pTransform1->m_PosX, pTransform1->m_PosY, pBody2->m_Shape, pTransform2->m_PosX, pTransform2->m_PosY);
 				if (collide)
 				{
 					TITAN_CORE_INFO("Collide! {0} {1} {2} {3}", "Obj1:", pBody1->m_Shape->m_Type, "Obj2", pBody2->m_Shape->m_Type);
+					break;
 				}
 			}
         }
     }
 
-
     for(auto pContact : gpCollisionManager->m_Contacts)
     {
-        CollideEvent collideEvent;
-        
-        pContact->m_Rigibodies[0]->m_Owner->HandleObjectEvent(&collideEvent);
-        pContact->m_Rigibodies[1]->m_Owner->HandleObjectEvent(&collideEvent);
+		pContact->m_Rigibodies[0]->m_Owner->HandleObjectEvent(ObjectEventType::COLLIDE);
+		pContact->m_Rigibodies[1]->m_Owner->HandleObjectEvent(ObjectEventType::COLLIDE);
     }
 }
 
@@ -111,8 +107,6 @@ bool CheckCollisionAABBAABB(Shape* pShape1, float Pos1X, float Pos1Y, Shape* pSh
 		Contacts.push_back(pNewContact);
 	}
 	return collision;
-
-	return false;
 }
 
 CollisionManager::CollisionManager()
@@ -130,9 +124,7 @@ CollisionManager::~CollisionManager()
 void CollisionManager::Reset()
 {
 	for (auto contact : m_Contacts)
-	{
 		delete contact;
-	}
 
 	m_Contacts.clear();
 }

@@ -1,8 +1,8 @@
 #include "tpch.h"
 #include "Component.h"
 
-Component::Component(COMPONENT_TYPE type)
+Component::Component(CompoentType componentType)
 {
 	m_Owner = nullptr;
-    m_Type = type;
+    m_Type = componentType;
 }
