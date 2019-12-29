@@ -9,7 +9,6 @@ namespace Titan {
 	void Renderer::Init()
 	{
 		RenderCommand::Init();
-		Renderer2D::Init();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -17,28 +16,31 @@ namespace Titan {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::BeginScene(OrthographicCamera& camera)
+	void Renderer::BeginScene(PerspectiveCamera& camera)
 	{
+		camera.SetPerspectiveMatrix(45.0f, (float)1280 / (float)720, 0.1f, 100.0f);
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+		
 	}
 
 	void Renderer::EndScene()
 	{
-		
+
 	}
 
 	void Renderer::Shutdown()
 	{
-		Renderer2D::Shutdown();
+		delete s_SceneData;
 	}
 
 	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
 		shader->Bind();
 		shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
-		shader->SetMat4("u_Transform", transform);
+		shader->SetMat4("u_Model", transform);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
+		vertexArray->Unbind();
 	}
 }

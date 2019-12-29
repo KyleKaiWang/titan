@@ -28,4 +28,8 @@
 
 #include "Renderer/OrthographicCamera.h"
 #include "Renderer/OrthographicCameraController.h"
+#include "Renderer/PerspectiveCamera.h"
+#include "Renderer/CameraController.h"
+
+#include "Mesh/Mesh.h"
 // -----------------------------------

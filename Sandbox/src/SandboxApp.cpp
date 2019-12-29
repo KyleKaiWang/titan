@@ -1,4 +1,4 @@
-#include "Sandbox2D.h"
+#include "Sandbox3D.h"
 #include "EntryPoint.h"
 //class ExampleLayer : public Titan::Layer
 //{
@@ -172,7 +172,7 @@ class Sandbox : public Titan::Application
 public:
     Sandbox()
     {
-		PushLayer(new Sandbox2D());
+		PushLayer(new Sandbox3D());
     }
     
     ~Sandbox()

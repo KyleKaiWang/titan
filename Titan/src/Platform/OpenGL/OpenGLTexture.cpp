@@ -10,10 +10,10 @@ namespace Titan {
 		:m_Width(width), m_Height(height)
 	{
 		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -45,7 +45,9 @@ namespace Titan {
 
 		// OpenGL 4.5
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+		glGenerateMipmap(GL_TEXTURE_2D);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
