@@ -33,4 +33,16 @@ namespace Titan {
 	public:
 		Cube(float _size = 1.0f);
 	};
+
+	class Sphere : public Mesh
+	{
+	public:
+		Sphere(unsigned int xSegments, unsigned int ySegments);
+	};
+
+	class Torus : public Mesh
+	{
+	public:
+		Torus(float r1, float r2, uint32_t numSteps1, uint32_t numSteps2);
+	};
 }
