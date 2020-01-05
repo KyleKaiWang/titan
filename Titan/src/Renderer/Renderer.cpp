@@ -20,7 +20,8 @@ namespace Titan {
 	{
 		camera.SetPerspectiveMatrix(45.0f, (float)1280 / (float)720, 0.1f, 100.0f);
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
-		
+		s_SceneData->ProjectionMatrix = camera.GetProjectionMatrix();
+		s_SceneData->ViewMatrix = camera.GetViewMatrix();
 	}
 
 	void Renderer::EndScene()
@@ -37,6 +38,8 @@ namespace Titan {
 	{
 		shader->Bind();
 		shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		shader->SetMat4("u_ProjectionMatrix", s_SceneData->ProjectionMatrix);
+		shader->SetMat4("u_ViewMatrix", s_SceneData->ViewMatrix);
 		shader->SetMat4("u_Model", transform);
 
 		vertexArray->Bind();

@@ -27,6 +27,8 @@ namespace Titan {
 		struct SceneData
 		{
 			glm::mat4 ViewProjectionMatrix;
+			glm::mat4 ProjectionMatrix;
+			glm::mat4 ViewMatrix;
 		};
 
 		static SceneData* s_SceneData;

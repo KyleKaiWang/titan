@@ -117,6 +117,11 @@ namespace Titan {
 		UploadUniformFloat(name, value);
 	}
 
+	void OpenGLShader::SetMat3(const std::string& name, const glm::mat3& matrix)
+	{
+		UploadUniformMat3(name, matrix);
+	}
+
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& matrix)
 	{
 		UploadUniformMat4(name, matrix);
