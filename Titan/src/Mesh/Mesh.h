@@ -37,12 +37,18 @@ namespace Titan {
 	class Sphere : public Mesh
 	{
 	public:
-		Sphere(unsigned int xSegments, unsigned int ySegments);
+		Sphere(unsigned int xSegments = 50, unsigned int ySegments = 50);
 	};
 
 	class Torus : public Mesh
 	{
 	public:
-		Torus(float r1, float r2, uint32_t numSteps1, uint32_t numSteps2);
+		Torus(float r1 = 0.7f, float r2 = 0.3f, uint32_t numSteps1 = 30, uint32_t numSteps2 = 30);
+	};
+
+	class Skybox : public Mesh
+	{
+	public:
+		Skybox(float size = 50.0f);
 	};
 }
