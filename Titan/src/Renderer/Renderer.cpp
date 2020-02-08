@@ -41,6 +41,13 @@ namespace Titan {
 		shader->SetMat4("u_ProjectionMatrix", s_SceneData->ProjectionMatrix);
 		shader->SetMat4("u_ViewMatrix", s_SceneData->ViewMatrix);
 		shader->SetMat4("u_Model", transform);
+		
+		glm::mat4 mv = s_SceneData->ViewMatrix * transform;
+		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
+
+		//Lighting
+		shader->SetFloat3("u_LightIntensity", glm::vec3(1.0f));
+		shader->SetFloat3("u_LightPosition", s_SceneData->ViewMatrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);

@@ -21,4 +21,17 @@ namespace Titan {
 		uint32_t m_RendererID;
 		uint32_t m_InternalFormat, m_DataFormat;
 	};
+
+	class OpenGLTextureCube : public TextureCube
+	{
+	public:
+		OpenGLTextureCube(std::vector<std::string> faces);
+		virtual ~OpenGLTextureCube();
+
+		virtual void Bind(uint32_t slot = 0) const override;
+
+	private:
+		uint32_t m_RendererID;
+		
+	};
 }

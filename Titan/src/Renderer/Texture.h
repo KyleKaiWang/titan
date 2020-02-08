@@ -23,4 +23,14 @@ namespace Titan {
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::string& path);
 	};
+
+	class TextureCube
+	{
+	public:
+		virtual ~TextureCube() = default;
+
+		virtual void Bind(uint32_t slot = 0) const = 0;
+
+		static Ref<TextureCube> Create(std::vector<std::string> facesPath);
+	};
 }
