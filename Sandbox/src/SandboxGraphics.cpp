@@ -31,8 +31,8 @@ void SandboxGraphics::OnAttach()
 	Titan::SceneNode* sceneNode = m_Scene->MakeSceneNode();
 
 	//Setting Material
-	std::shared_ptr<Titan::Material> material = std::make_shared<Titan::PhongMaterial>();
-	sceneNode->SetMaterial(std::static_pointer_cast<Titan::Material>(material));
+	m_PhongMaterial = std::make_shared<Titan::PhongMaterial>();
+	sceneNode->SetMaterial(std::static_pointer_cast<Titan::Material>(m_PhongMaterial));
 
 	//Setting Mesh
 	std::shared_ptr<Titan::Mesh> mesh = std::make_shared<Titan::Cube>();
