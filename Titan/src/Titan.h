@@ -20,6 +20,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/RenderCommand.h"
+#include "Scene/Scene.h"
 
 #include "Renderer/Buffer.h"
 #include "Renderer/Shader.h"
@@ -30,6 +31,8 @@
 #include "Renderer/OrthographicCameraController.h"
 #include "Renderer/PerspectiveCamera.h"
 #include "Renderer/CameraController.h"
+
+#include "Renderer/Sprite.h"
 
 #include "Mesh/Mesh.h"
 // -----------------------------------
