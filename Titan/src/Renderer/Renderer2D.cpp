@@ -110,7 +110,7 @@ namespace Titan {
 		s_Data->QuadVertexArray->Unbind();
 	}
 
-	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexBuffer>& indexBuffer, const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture)
 	{
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", glm::vec4(1.0f));
@@ -120,7 +120,7 @@ namespace Titan {
 		s_Data->QuadShader->SetMat4("u_Model", transform);
 
 		vertexArray->Bind();
-		vertexArray->SetIndexBuffer(s_Data->QuadIndexBuffer);
+		vertexArray->SetIndexBuffer(indexBuffer? indexBuffer : s_Data->QuadIndexBuffer);
 		RenderCommand::DrawIndexed(vertexArray);
 		vertexArray->Unbind();
 	}
