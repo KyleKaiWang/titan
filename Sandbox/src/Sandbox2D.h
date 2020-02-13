@@ -15,15 +15,20 @@ public:
 private:
 	Titan::OrthographicCameraController m_CameraController;
 
-	Titan::Ref<Titan::Shader> m_Shader;
-	Titan::Ref<Titan::VertexArray> m_VertexArray;
-
-	Titan::Ref<Titan::Shader> m_FlatColorShader;
-	Titan::Ref<Titan::VertexArray> m_SquareVA;
-
-	Titan::Ref<Titan::Shader> m_TextureShader;
-	Titan::Ref<Titan::Texture2D> m_Texture;
+	std::shared_ptr<Titan::Shader> m_Shader;
+	std::shared_ptr<Titan::VertexArray> m_VertexArray;
+	std::shared_ptr<Titan::Shader> m_FlatColorShader;
+	std::shared_ptr<Titan::VertexArray> m_SquareVA;
+	std::shared_ptr<Titan::Shader> m_TextureShader;
+	std::shared_ptr<Titan::Texture2D> m_Texture;
 
 	glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
+
+	Titan::Ref<Titan::Sprite> m_Sprite;
+
+	Titan::ParticleSystem m_ParticleSystem;
+	Titan::Particle m_Particle;
+
+	bool m_ParticleActive = true;
 
 };

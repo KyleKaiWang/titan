@@ -33,6 +33,7 @@
 #include "Renderer/CameraController.h"
 
 #include "Renderer/Sprite.h"
+#include "Particle/ParticleSystem.h"
 
 #include "Mesh/Mesh.h"
 // -----------------------------------

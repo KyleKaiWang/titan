@@ -129,7 +129,7 @@ namespace Titan {
 			});
 		m_SpriteVertexArray->AddVertexBuffer(m_SpriteVertexBuffer);
 
-		Renderer2D::DrawQuad(m_SpriteVertexArray, nullptr, glm::vec3(0.0f), glm::vec2(1.0f), 0.0f, m_Texture2D);
+		//Renderer2D::DrawQuad(m_SpriteVertexArray, nullptr, glm::vec3(0.0f), glm::vec2(1.0f), 0.0f, m_Texture2D);
 	}
 
 	void Sprite::SetAnimSequence(int startWithFrame, int numFrames)
