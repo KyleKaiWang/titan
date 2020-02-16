@@ -1,6 +1,5 @@
 #include "tpch.h"
 #include "Renderer.h"
-#include "Renderer/Renderer2D.h"
 
 namespace Titan {
 

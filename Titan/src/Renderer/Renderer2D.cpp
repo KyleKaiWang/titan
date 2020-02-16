@@ -25,6 +25,7 @@ namespace Titan {
 
 	void Renderer2D::Init()
 	{
+		RenderCommand::Init();
 		//Init Regular Quad
 		s_Data = new Renderer2DStorage();
 		s_Data->QuadVertexArray = VertexArray::Create();

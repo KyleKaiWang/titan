@@ -1,5 +1,6 @@
 #pragma once
 #include "Texture.h"
+#include "VertexArray.h"
 #include <glm/glm.hpp>
 
 namespace Titan {

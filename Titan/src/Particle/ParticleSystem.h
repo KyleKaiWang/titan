@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "Renderer/OrthographicCamera.h"
+#include "Renderer/Shader.h"
+#include "Renderer/VertexArray.h"
 
 namespace Titan {
 

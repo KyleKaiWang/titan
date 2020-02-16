@@ -36,4 +36,5 @@
 #include "Particle/ParticleSystem.h"
 
 #include "Mesh/Mesh.h"
+#include "Platform/OpenGL/OpenGLDebugDraw.h"
 // -----------------------------------

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OrthographicCamera.h"
+#include "VertexArray.h"
 #include "Texture.h"
 
 namespace Titan {
