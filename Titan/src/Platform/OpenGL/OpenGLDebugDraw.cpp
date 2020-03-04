@@ -3,8 +3,10 @@
 #include "Renderer\RenderCommand.h"
 #include "Renderer\Renderer2D.h"
 #include "Renderer\Shader.h"
+#include "Application.h"
 #include <glm\gtx\transform.hpp>
 #include <glm\ext\matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <gl/GLU.h>
@@ -64,11 +66,6 @@ namespace Titan {
 		glLineWidth(1.0f);
 	}
 	
-	void OpenGLDebugDraw::DrawCross(const glm::vec3& position, glm::vec3 color, float size, float duration, bool depthEnabled)
-	{
-		
-	}
-	
 	void OpenGLDebugDraw::DrawCircle(const glm::vec3& centerPosition, const glm::vec3& planeNormal, float radius, glm::vec3 color, float duration, bool depthEnabled)
 	{
 		const int numVertices = 37;
@@ -94,7 +91,12 @@ namespace Titan {
 			circleData[(i * 3) + 1] = circleDataY[i];
 			circleData[(i * 3) + 2] = circleDataZ[i];
 		}
-		
+		auto& app =  Titan::Application::Get();
+		Window& win = app.GetWindow();
+		float aspectR = (float)win.GetWidth() / (float)win.GetHeight();
+		glm::mat4 trans = glm::translate(glm::mat4(1.0f), centerPosition) * glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { 1 / aspectR, 1.0f, 1.0f });
+		s_DebugDrawProps->DebugShader->SetMat4("u_Transform", trans);
+
 		s_DebugDrawProps->DebugShader->Bind();
 		s_DebugDrawProps->DebugShader->SetFloat4("u_Color", glm::vec4(color, 1.0f));
 		glBindBuffer(GL_ARRAY_BUFFER, s_DebugDrawProps->VBO);

@@ -59,6 +59,15 @@ void SandboxGraphics::OnAttach()
 	m_TextureCube = Titan::TextureCube::Create(cubeMapFaces);
 	m_SkyboxShader = Titan::Shader::Create("shaders/Skybox.vs", "shaders/Skybox.fs");
 	//---------------------------------------------------------------------------------
+
+	//Particle
+	//m_Particle.ColorBegin = { 254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f };
+	//m_Particle.ColorEnd = { 254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f };
+	//m_Particle.SizeBegin = 0.5f, m_Particle.SizeVariation = 0.3f, m_Particle.SizeEnd = 0.0f;
+	//m_Particle.LifeTime = 1.0f;
+	//m_Particle.Velocity = { 0.0f, 0.0f };
+	//m_Particle.VelocityVariation = { 3.0f, 1.0f };
+	//m_Particle.Position = { 0.0f, 0.0f, 1.0f };
 }
 
 void SandboxGraphics::OnDetach()
@@ -121,6 +130,8 @@ void SandboxGraphics::OnUpdate(Titan::Timestep ts)
 	Titan::Renderer::Submit(m_SkyboxShader, m_DrawSkybox->GetMeshVertexArray());
 
 	Titan::Renderer::EndScene();
+	//m_ParticleSystem.Update(ts);
+	//m_ParticleSystem.Render();
 }
 
 void SandboxGraphics::OnImGuiRender()

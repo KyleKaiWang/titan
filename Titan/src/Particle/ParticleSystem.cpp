@@ -8,7 +8,7 @@ namespace Titan {
 	
 	ParticleSystem::ParticleSystem()
 	{
-		m_ParticlePool.resize(1000);
+		m_ParticlePool.resize(m_ParticlePoolSize);
 		m_BufferData.ParticleVertexArray = VertexArray::Create();
 	}
 
@@ -28,9 +28,12 @@ namespace Titan {
 				particle.Active = false;
 				continue;
 			}
-			
+
+			//particle.Velocity.x = particle.Velocity.x + particle.Speed.x * cos(particle.Rotation) * ts;
+			//particle.Velocity.y = particle.Velocity.y + particle.Speed.y * sin(particle.Rotation) * ts;
+
 			particle.LifeRemaining -= ts;
-			particle.Position += particle.Velocity * ts;
+			particle.Position += particle.Velocity;
 			particle.Rotation += 0.01f * ts;
 		}
 	}
@@ -80,6 +83,7 @@ namespace Titan {
 		particle.Position = particleProps.Position;
 		particle.Rotation = Random::Float() * 2.0f * glm::pi<float>();
 
+		particle.Speed = particleProps.Speed;
 		
 		particle.Velocity = particleProps.Velocity;
 		particle.Velocity += particleProps.VelocityVariation.x * (Random::Float() - 0.5f);

@@ -28,6 +28,7 @@ private:
 
 	Titan::ParticleSystem m_ParticleSystem;
 	Titan::Particle m_Particle;
+	uint32_t m_ParticlePoolSize = 1000;
 
 	bool m_ParticleActive = true;
 

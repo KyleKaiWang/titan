@@ -31,4 +31,7 @@ private:
 	glm::vec3 m_Diffuse = glm::vec3(0.9f, 0.5f, 0.3f);
 	glm::vec3 m_Specular = glm::vec3(0.05f, 0.05f, 0.05f);
 	float m_Shininess = 100.0f;
+
+	//Titan::ParticleSystem m_ParticleSystem;
+	//Titan::Particle m_Particle;
 };
