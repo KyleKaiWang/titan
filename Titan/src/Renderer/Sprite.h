@@ -37,6 +37,7 @@ namespace Titan {
 		std::shared_ptr<Texture2D> m_Texture2D;
 		std::shared_ptr<VertexArray> m_SpriteVertexArray;
 		std::shared_ptr<VertexBuffer> m_SpriteVertexBuffer;
+		std::vector<float> m_Vertices;
 		glm::vec2 m_Position;
 		uint32_t m_SpriteWidth, m_SpriteHeight;
 		unsigned int m_CurrentFrame, m_StartFrame, m_LastFrame, m_TotalHorizontalFrame, m_TotalVerticalFrame, m_TotalFrames;

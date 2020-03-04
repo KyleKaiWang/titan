@@ -20,6 +20,15 @@ namespace Titan {
 
 		m_IsPaused = false;
 		m_LoopingAnim = false;
+
+		m_Vertices = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
+		};
+
+		m_SpriteVertexBuffer = VertexBuffer::Create(&m_Vertices[0], m_Vertices.size() * sizeof(float));
 	}
 
 	Sprite::Sprite(std::shared_ptr<Texture2D>& texture2D)
@@ -115,21 +124,21 @@ namespace Titan {
 
 	void Sprite::DrawInternal(const glm::vec2& rect, const glm::vec2& texCoord, const glm::vec2& texCoordOffset)
 	{
-		float quadVertices[] = {
+		m_Vertices = {
 		   -rect.x, -rect.y, 0.0f, texCoord.x, texCoord.y,
 			rect.x, -rect.y, 0.0f, texCoord.x + texCoordOffset.x, texCoord.y,
 			rect.x,  rect.y, 0.0f, texCoord.x + texCoordOffset.x, texCoord.y + texCoordOffset.y,
 		   -rect.x,  rect.y, 0.0f, texCoord.x, texCoord.y + texCoordOffset.y
 		};
 
-		m_SpriteVertexBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
+		m_SpriteVertexBuffer->UpdateBufferData(&m_Vertices[0], m_Vertices.size() * sizeof(float));
 		m_SpriteVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
 			});
 		m_SpriteVertexArray->AddVertexBuffer(m_SpriteVertexBuffer);
 
-		//Renderer2D::DrawQuad(m_SpriteVertexArray, nullptr, glm::vec3(0.0f), glm::vec2(1.0f), 0.0f, m_Texture2D);
+		Renderer2D::DrawQuad(m_SpriteVertexArray, glm::vec3(0.0f), glm::vec2(1.0f), 0.0f, glm::vec4(1.0f), m_Texture2D);
 	}
 
 	void Sprite::SetAnimSequence(int startWithFrame, int numFrames)
