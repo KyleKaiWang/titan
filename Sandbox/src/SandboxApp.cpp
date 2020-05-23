@@ -8,10 +8,10 @@ public:
     Sandbox()
     {
 		//Test Graphics Feature
-		//PushLayer(new SandboxGraphics());
+		PushLayer(new SandboxGraphics());
 		
 		//Test 2D feature
-		PushLayer(new Sandbox2D());
+		//PushLayer(new Sandbox2D());
 
 		//Test 3D feature
 		//PushLayer(new Sandbox3D());

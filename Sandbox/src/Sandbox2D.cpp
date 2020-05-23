@@ -13,7 +13,7 @@ Sandbox2D::Sandbox2D()
 void Sandbox2D::OnAttach()
 {
 	Titan::Renderer2D::Init();
-	m_Texture = m_Texture = Titan::Texture2D::Create("assets/textures/Brick.png");
+	m_Texture = Titan::Texture2D::Create("assets/textures/Brick.png");
 
 	Titan::OpenGLDebugDraw::Init();
 
