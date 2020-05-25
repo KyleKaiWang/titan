@@ -15,7 +15,7 @@ namespace Titan {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 		
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateTextureMipmap(GL_TEXTURE_2D);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -49,7 +49,7 @@ namespace Titan {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateTextureMipmap(GL_TEXTURE_2D);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -68,7 +68,7 @@ namespace Titan {
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, texDesc.Width, texDesc.Height);
 
 		if(texDesc.MipLevels != 0) 
-			glGenerateMipmap(GL_TEXTURE_2D);
+			glGenerateTextureMipmap(GL_TEXTURE_2D);
 		else  
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
