@@ -1,4 +1,5 @@
 #include "SandboxGraphics.h"
+#include "SandboxDeferred.h"
 #include "Sandbox2D.h"
 #include "EntryPoint.h"
 
@@ -8,7 +9,10 @@ public:
     Sandbox()
     {
 		//Test Graphics Feature
-		PushLayer(new SandboxGraphics());
+		//PushLayer(new SandboxGraphics());
+
+        //Test Graphics Feature
+        PushLayer(new SandboxDeferred());
 		
 		//Test 2D feature
 		//PushLayer(new Sandbox2D());

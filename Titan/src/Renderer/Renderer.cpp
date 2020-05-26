@@ -1,5 +1,6 @@
 #include "tpch.h"
 #include "Renderer.h"
+#include "Application.h"
 
 namespace Titan {
 
@@ -17,7 +18,8 @@ namespace Titan {
 
 	void Renderer::BeginScene(PerspectiveCamera& camera)
 	{
-		camera.SetPerspectiveMatrix(45.0f, (float)1280 / (float)720, 0.1f, 100.0f);
+		auto& window = Application::Get().GetWindow();
+		camera.SetPerspectiveMatrix(45.0f, (float)window.GetWidth() / (float)window.GetHeight(), 0.1f, 100.0f);
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 		s_SceneData->ProjectionMatrix = camera.GetProjectionMatrix();
 		s_SceneData->ViewMatrix = camera.GetViewMatrix();
@@ -46,10 +48,10 @@ namespace Titan {
 
 		//Lighting
 		shader->SetFloat3("u_LightIntensity", glm::vec3(1.0f));
-		shader->SetFloat3("u_LightPosition", s_SceneData->ViewMatrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
+		shader->SetFloat4("u_LightPosition", s_SceneData->ViewMatrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
-		vertexArray->Unbind();
+		//vertexArray->Unbind();
 	}
 }

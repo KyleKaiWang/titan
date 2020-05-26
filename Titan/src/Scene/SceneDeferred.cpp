@@ -18,7 +18,7 @@ namespace Titan {
 
 		std::shared_ptr<Texture2D> m_NormalTexture;
 		std::shared_ptr<Texture2D> m_PosTexture;
-		std::shared_ptr<Texture2D> m_ColorTexture;
+		std::shared_ptr<Texture2D> m_DiffuseTexture;
 	};
 
 	static SceneDeferredStorage* s_DeferredData;
@@ -29,31 +29,31 @@ namespace Titan {
 		s_DeferredData->m_VertexArray = VertexArray::Create();
 
 		float quadVertices[] = {
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  1.0f,  1.0f, 0.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  1.0f,  1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f, 0.0f
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 		};
 
 		s_DeferredData->m_VertexBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
 		s_DeferredData->m_VertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float3, "a_Normal" }
+			{ ShaderDataType::Float2, "a_TexCoord" }
 			});
 		s_DeferredData->m_VertexArray->AddVertexBuffer(s_DeferredData->m_VertexBuffer);
 		s_DeferredData->m_VertexArray->Unbind();
 
+		s_DeferredData->m_Shader = Shader::Create("shaders/DeferredShading.vs", "shaders/DeferredShading.fs");
+		s_DeferredData->m_Shader->Bind();
+		s_DeferredData->m_Shader->SetInt("g_PositionTexture", 1);
+		s_DeferredData->m_Shader->SetInt("g_NormalTexture", 2);
+		s_DeferredData->m_Shader->SetInt("g_DiffuseTexture", 3);
+
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
 
-		s_DeferredData->m_Shader = Shader::Create("shaders/DeferredShading.vs", "shaders/DeferredShading.fs");
-		s_DeferredData->m_Shader->Bind();
-		s_DeferredData->m_Shader->SetInt("u_PositionTexture", 0);
-		s_DeferredData->m_Shader->SetInt("u_NormalTexture", 1);
-		s_DeferredData->m_Shader->SetInt("u_ColorTexture", 2);
+		//Passing temporary light
+		//s_DeferredData->m_Shader->SetFloat3("u_Light", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	}
 
 	void SceneDeferred::Update(float t)
@@ -75,59 +75,66 @@ namespace Titan {
 		texDesc.MipLevels = 0;
 
 		tex = Texture2D::Create(texDesc);
-		tex->Bind(slot);
+		//tex->Bind(slot);
 		GBufferTextures.push_back(tex);
+		//glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT0 + slot, tex->GetTextureID(), 0);
 	}
 
 	void SceneDeferred::SetFrameBuffer(uint32_t width, uint32_t height)
 	{
 		glCreateFramebuffers(1, &s_DeferredData->m_RendererID);
-		glBindFramebuffer(GL_FRAMEBUFFER, s_DeferredData->m_RendererID);
-		
-		glCreateRenderbuffers(1, &s_DeferredData->m_DepthBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, s_DeferredData->m_DepthBuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 		
 		//Create G-Buffer
 		CreateGBufferTexture(s_DeferredData->m_PosTexture, 0, GL_RGB32F);
+		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT0, s_DeferredData->m_PosTexture->GetTextureID(), 0);
 		CreateGBufferTexture(s_DeferredData->m_NormalTexture, 1, GL_RGB32F);
-		CreateGBufferTexture(s_DeferredData->m_ColorTexture, 2, GL_RGB8);
-		
+		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT1, s_DeferredData->m_NormalTexture->GetTextureID(), 0);
+		CreateGBufferTexture(s_DeferredData->m_DiffuseTexture, 2, GL_RGB8);
+		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT2, s_DeferredData->m_DiffuseTexture->GetTextureID(), 0);
 		// Attach the textures to the framebuffer
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, s_DeferredData->m_DepthBuffer);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_DeferredData->m_PosTexture->GetTextureID(), 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_DeferredData->m_NormalTexture->GetTextureID(), 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, s_DeferredData->m_ColorTexture->GetTextureID(), 0);
 
-		unsigned int drawBuffers[] = { GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers(4, drawBuffers);
+		if (glCheckNamedFramebufferStatus(s_DeferredData->m_RendererID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cerr << "framebuffer error\n";
+
+		unsigned int attachments[] = { GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+		glNamedFramebufferDrawBuffers(s_DeferredData->m_RendererID, 4, attachments);
+		//glDrawBuffers(3, attachments);
+
+		// create and attach depth buffer (renderbuffer)
+		glCreateRenderbuffers(1, &s_DeferredData->m_DepthBuffer);
+		if (GL_TRUE != glIsRenderbuffer(s_DeferredData->m_DepthBuffer))
+			std::cerr << "Error creating depth renderbuffer.\n";
+		glNamedRenderbufferStorage(s_DeferredData->m_DepthBuffer, GL_DEPTH_COMPONENT, width, height);
+		glNamedFramebufferRenderbuffer(s_DeferredData->m_RendererID, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, s_DeferredData->m_DepthBuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-	void SceneDeferred::Pass1(PerspectiveCamera& camera)
+	void SceneDeferred::BindingFramebuffer(PerspectiveCamera& camera)
 	{
-		s_DeferredData->m_Shader->Bind();
-		s_DeferredData->m_Shader->SetInt("Pass", 1);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, s_DeferredData->m_RendererID);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-
-		//glFinish();
 	}
-	void SceneDeferred::Pass2(PerspectiveCamera& camera)
+	void SceneDeferred::DeferredPass(PerspectiveCamera& camera)
 	{
-		s_DeferredData->m_Shader->SetInt("Pass", 2);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
-		s_DeferredData->m_Shader->SetMat4("u_ProjectionMatrix", camera.GetProjectionMatrix());
-		s_DeferredData->m_Shader->SetMat4("u_ViewMatrix", camera.GetViewMatrix());
-		s_DeferredData->m_Shader->SetMat4("u_Model", glm::mat4(1.0f));
-		s_DeferredData->m_Shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(camera.GetViewMatrix()[0]), glm::vec3(camera.GetViewMatrix()[1]), glm::vec3(camera.GetViewMatrix()[3])));
 
+		s_DeferredData->m_Shader->Bind();
+		s_DeferredData->m_Shader->SetFloat4("u_LightPosition", glm::vec4(5.0f, 5.0f, 0.0f, 1.0f));
+		s_DeferredData->m_Shader->SetFloat("u_LightIntensity", 5.0f);
+		for (int i = 0; i < GBufferTextures.size(); ++i) {
+			GBufferTextures[i]->Bind(i+1);
+		}
+		
 		s_DeferredData->m_VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glBindVertexArray(0);
+
+		//Read Buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, s_DeferredData->m_RendererID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitNamedFramebuffer(s_DeferredData->m_RendererID, 0, 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 }
