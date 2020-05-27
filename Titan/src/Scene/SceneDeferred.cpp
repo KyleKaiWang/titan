@@ -51,9 +51,6 @@ namespace Titan {
 
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
-
-		//Passing temporary light
-		//s_DeferredData->m_Shader->SetFloat3("u_Light", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	}
 
 	void SceneDeferred::Update(float t)
@@ -75,9 +72,10 @@ namespace Titan {
 		texDesc.MipLevels = 0;
 
 		tex = Texture2D::Create(texDesc);
-		//tex->Bind(slot);
 		GBufferTextures.push_back(tex);
-		//glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT0 + slot, tex->GetTextureID(), 0);
+
+		// Attach the textures to the framebuffer
+		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT0 + slot, tex->GetTextureID(), 0);
 	}
 
 	void SceneDeferred::SetFrameBuffer(uint32_t width, uint32_t height)
@@ -86,19 +84,14 @@ namespace Titan {
 		
 		//Create G-Buffer
 		CreateGBufferTexture(s_DeferredData->m_PosTexture, 0, GL_RGB32F);
-		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT0, s_DeferredData->m_PosTexture->GetTextureID(), 0);
 		CreateGBufferTexture(s_DeferredData->m_NormalTexture, 1, GL_RGB32F);
-		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT1, s_DeferredData->m_NormalTexture->GetTextureID(), 0);
 		CreateGBufferTexture(s_DeferredData->m_DiffuseTexture, 2, GL_RGB8);
-		glNamedFramebufferTexture(s_DeferredData->m_RendererID, GL_COLOR_ATTACHMENT2, s_DeferredData->m_DiffuseTexture->GetTextureID(), 0);
-		// Attach the textures to the framebuffer
 
 		if (glCheckNamedFramebufferStatus(s_DeferredData->m_RendererID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cerr << "framebuffer error\n";
 
 		unsigned int attachments[] = { GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 		glNamedFramebufferDrawBuffers(s_DeferredData->m_RendererID, 4, attachments);
-		//glDrawBuffers(3, attachments);
 
 		// create and attach depth buffer (renderbuffer)
 		glCreateRenderbuffers(1, &s_DeferredData->m_DepthBuffer);

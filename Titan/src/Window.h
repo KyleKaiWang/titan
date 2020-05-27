@@ -39,7 +39,7 @@ namespace Titan {
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
-				
+		virtual void GetDesktopResolution(unsigned int& width, unsigned int& height) = 0;
 		static Window* Create(const WindowProps& props = WindowProps());
 		
 

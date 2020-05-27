@@ -25,26 +25,6 @@ void SandboxDeferred::OnAttach()
 	//Test Basic Object Rendering
 	m_Texture = Titan::Texture2D::Create("assets/textures/Brick.png");
 	m_Shader = Titan::Shader::Create("shaders/Geometry.vs", "shaders/Geometry.fs");
-	
-	//Test Scene System
-	//---------------------------------------------------------------------------------
-	//m_Scene.reset(new Titan::Scene());
-	//m_Scene->SetCameraController(&m_CameraController);
-
-	//Make a SceneNode 
-	//Titan::SceneNode* sceneNode = m_Scene->MakeSceneNode();
-
-	//Setting Material
-	//m_PhongMaterial = std::make_shared<Titan::PhongMaterial>();
-	//sceneNode->SetMaterial(std::static_pointer_cast<Titan::Material>(m_PhongMaterial));
-
-	//Setting Mesh
-	//std::shared_ptr<Titan::Mesh> mesh = std::make_shared<Titan::Cube>();
-	//sceneNode->SetMesh(mesh);
-
-	//Add SceneNode to the Scene
-	//m_Scene->AddSceneNode(sceneNode);
-	//m_Scene->InitScene();
 
 	//Setting Deferred Shading
 	//---------------------------------------------------------------------------------
@@ -76,8 +56,14 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	m_Shader->SetFloat3("Ks", glm::vec3(0.05f, 0.05f, 0.05f));
 	m_Shader->SetFloat("u_Shininess", 1.0f);
 	m_Shader->SetInt("u_Texture", 0);
-	Titan::Renderer::Submit(m_Shader, m_DrawMesh->GetMeshVertexArray());
-	//Titan::Renderer::Submit(m_Shader, m_DrawMesh2->GetMeshVertexArray(), );
+	for (int i = 1; i <= 10; ++i) {
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 1.0f, 1.0f));
+		Titan::Renderer::Submit(m_Shader, m_DrawMesh->GetMeshVertexArray(), transform);
+		transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 3.0f, 1.0f));
+		Titan::Renderer::Submit(m_Shader, m_DrawMesh->GetMeshVertexArray(), transform);
+		transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 5.0f, 1.0f));
+		Titan::Renderer::Submit(m_Shader, m_DrawMesh->GetMeshVertexArray(), transform);
+	}
 	m_Shader->Unbind();
 	Titan::Renderer::EndScene();
 	
@@ -86,10 +72,15 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 
 void SandboxDeferred::OnImGuiRender()
 {
-	ImGui::SetNextWindowSize(ImVec2(1280, 720));
-	ImGui::Begin("GBuffer");
-	for (auto tex : Titan::SceneDeferred::GBufferTextures) {
-		ImGui::Image((void*)tex->GetTextureID(), ImVec2((float)tex->GetWidth(), (float)tex->GetHeight()), ImVec2(0,1), ImVec2(1,0));
+	auto& window = Titan::Application::Get().GetWindow();
+	unsigned int x, y;
+	window.GetDesktopResolution(x, y);
+
+	ImGui::SetNextWindowSize(ImVec2(x, y));
+	ImGui::Begin("GBuffer", 0, ImGuiWindowFlags_NoCollapse);
+	for(int i = 0; i < Titan::SceneDeferred::GBufferTextures.size(); ++i) {
+		ImGui::Image((void*)Titan::SceneDeferred::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
+		if (i % 2 == 0) ImGui::SameLine();
 	}
 	ImGui::End();
 }

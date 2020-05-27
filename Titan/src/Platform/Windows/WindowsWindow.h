@@ -23,6 +23,7 @@ namespace Titan {
 		bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const { return m_Window; }
+		void GetDesktopResolution(unsigned int& width, unsigned int& height);
 
 	private:
 		virtual void Init(const WindowProps& props);

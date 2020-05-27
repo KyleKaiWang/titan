@@ -109,41 +109,41 @@ namespace Titan{
 		});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow * window, int button, int action, int mods)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				switch (action)
-				{
-				case GLFW_PRESS:
-				{
-					MouseButtonPressedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				}
-			});
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				MouseButtonPressedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				MouseButtonReleasedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			}
+		});
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow * window, double xOffset, double yOffset)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseScrolledEvent event((float)xOffset, (float)yOffset);
-				data.EventCallback(event);
-			});
+			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			data.EventCallback(event);
+		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow * window, double xPos, double yPos)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseMovedEvent event((float)xPos, (float)yPos);
-				data.EventCallback(event);
-			});
+			MouseMovedEvent event((float)xPos, (float)yPos);
+			data.EventCallback(event);
+		});
 	}
 
 	void WindowsWindow::Shutdown()
@@ -173,5 +173,13 @@ namespace Titan{
 		return m_Data.VSync;
 	}
 
-	
+	void WindowsWindow::GetDesktopResolution(unsigned int& width, unsigned int& height)
+	{
+		RECT desktop;
+		const HWND hDesktop = GetDesktopWindow();
+		GetWindowRect(hDesktop, &desktop);
+
+		width = desktop.right;
+		height = desktop.bottom;
+	}
 }
