@@ -5,8 +5,7 @@ workspace "Titan"
 	configurations
 	{
 		"Debug",
-		"Release",
-		"Dist"
+		"Release"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -141,10 +140,5 @@ project "Sandbox"
 
 	filter "configurations:Release"
 		defines "TITAN_RELEASE"
-		runtime "Release"
-		optimize "on"
-
-	filter "configurations:Dist"
-		defines "TITAN_DIST"
 		runtime "Release"
 		optimize "on"
