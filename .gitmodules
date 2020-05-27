@@ -3,10 +3,10 @@
 	url = https://github.com/gabime/spdlog
 [submodule "Titan/thirdparty/GLFW"]
 	path = Titan/thirdparty/GLFW
-	url = https://github.com/glfw/glfw
+	url = https://github.com/KyleKaiWang/glfw
 [submodule "Titan/thirdparty/imgui"]
 	path = Titan/thirdparty/imgui
-	url = https://github.com/ocornut/imgui
+	url = https://github.com/KyleKaiWang/imgui
 [submodule "Titan/thirdparty/glm"]
 	path = Titan/thirdparty/glm
 	url = https://github.com/g-truc/glm
