@@ -6,7 +6,7 @@
 
 namespace Titan {
 
-	const unsigned int NUM_LIGHTS = 32;
+	const unsigned int NUM_LIGHTS = 5;
 	std::vector<glm::vec3> lightPositions;
 	std::vector<glm::vec3> lightColors;
 
@@ -23,6 +23,7 @@ namespace Titan {
 		std::shared_ptr<Texture2D> m_NormalTexture;
 		std::shared_ptr<Texture2D> m_PosTexture;
 		std::shared_ptr<Texture2D> m_DiffuseTexture;
+		std::shared_ptr<Texture2D> m_DepthMap;
 	};
 
 	static SceneDeferredStorage* s_DeferredData;
@@ -62,12 +63,12 @@ namespace Titan {
 		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
 		{
 			// calculate slightly random offsets
-			//float xPos = 1;//((rand() % 100) / 100.0) * 6.0 - 3.0;
-			//float yPos = 1;//((rand() % 100) / 100.0) * 6.0 - 4.0;
-			//float zPos = 1;//((rand() % 100) / 100.0) * 6.0 - 3.0;
-			float xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
-			float yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
-			float zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			//float xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			//float yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
+			//float zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			float xPos = i * 2.0f;
+			float yPos = 0.0f;
+			float zPos = 0.0f;
 			lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
 			// also calculate random color
 			float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
@@ -110,12 +111,13 @@ namespace Titan {
 		CreateGBufferTexture(s_DeferredData->m_PosTexture, 0, GL_RGB32F);
 		CreateGBufferTexture(s_DeferredData->m_NormalTexture, 1, GL_RGB32F);
 		CreateGBufferTexture(s_DeferredData->m_DiffuseTexture, 2, GL_RGB8);
+		CreateGBufferTexture(s_DeferredData->m_DepthMap, 3, GL_RGB8);
 
 		if (glCheckNamedFramebufferStatus(s_DeferredData->m_RendererID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cerr << "framebuffer error\n";
 
-		unsigned int attachments[] = { GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glNamedFramebufferDrawBuffers(s_DeferredData->m_RendererID, 4, attachments);
+		unsigned int attachments[] = { GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		glNamedFramebufferDrawBuffers(s_DeferredData->m_RendererID, 5, attachments);
 
 		// create and attach depth buffer (renderbuffer)
 		glCreateRenderbuffers(1, &s_DeferredData->m_DepthBuffer);
@@ -135,7 +137,7 @@ namespace Titan {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
 
 		s_DeferredData->m_Shader->Bind();
 		//s_DeferredData->m_Shader->SetFloat4("u_LightPosition", glm::vec4(5.0f, 5.0f, 0.0f, 1.0f));
@@ -152,9 +154,10 @@ namespace Titan {
 			
 			const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
 			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-			s_DeferredData->m_Shader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", radius);
+			s_DeferredData->m_Shader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", 10000);
 		}
-		s_DeferredData->m_Shader->SetFloat3("u_ViewPos", camera.GetPosition());
+		glm::vec3 p =  camera.GetViewProjectionMatrix() * glm::vec4(camera.GetPosition(), 1.0f);
+		s_DeferredData->m_Shader->SetFloat3("u_ViewPos", p);
 			
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i+1);
@@ -165,9 +168,12 @@ namespace Titan {
 		glBindVertexArray(0);
 
 		//Read Buffer
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, s_DeferredData->m_RendererID);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBlitNamedFramebuffer(s_DeferredData->m_RendererID, 0, 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, s_DeferredData->m_RendererID);
+		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		//glBlitNamedFramebuffer(s_DeferredData->m_RendererID, 0, 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//Multiple lighting pass
+		
 	}
 }
