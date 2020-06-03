@@ -8,6 +8,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+struct Light 
+{
+	glm::vec3 Position;
+	glm::vec3 Color;
+	float Linear;
+	float Quadratic;
+	float Radius;
+};
+
 SandboxDeferred::SandboxDeferred()
 	: Layer("SandboxDeferred"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 100.0f)
 {

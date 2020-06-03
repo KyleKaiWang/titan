@@ -6,6 +6,10 @@
 
 namespace Titan {
 
+	const unsigned int NUM_LIGHTS = 32;
+	std::vector<glm::vec3> lightPositions;
+	std::vector<glm::vec3> lightColors;
+
 	std::vector<std::shared_ptr<Texture2D>> SceneDeferred::GBufferTextures;
 
 	struct SceneDeferredStorage
@@ -51,6 +55,26 @@ namespace Titan {
 
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
+
+		// lighting info
+		// -------------
+		srand(13);
+		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
+		{
+			// calculate slightly random offsets
+			//float xPos = 1;//((rand() % 100) / 100.0) * 6.0 - 3.0;
+			//float yPos = 1;//((rand() % 100) / 100.0) * 6.0 - 4.0;
+			//float zPos = 1;//((rand() % 100) / 100.0) * 6.0 - 3.0;
+			float xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			float yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
+			float zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+			// also calculate random color
+			float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			float gColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			float bColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			lightColors.push_back(glm::vec3(rColor, gColor, bColor));
+		}
 	}
 
 	void SceneDeferred::Update(float t)
@@ -114,8 +138,24 @@ namespace Titan {
 		glDisable(GL_DEPTH_TEST);
 
 		s_DeferredData->m_Shader->Bind();
-		s_DeferredData->m_Shader->SetFloat4("u_LightPosition", glm::vec4(5.0f, 5.0f, 0.0f, 1.0f));
-		s_DeferredData->m_Shader->SetFloat("u_LightIntensity", 5.0f);
+		//s_DeferredData->m_Shader->SetFloat4("u_LightPosition", glm::vec4(5.0f, 5.0f, 0.0f, 1.0f));
+		//s_DeferredData->m_Shader->SetFloat("u_LightIntensity", 5.0f);
+		
+		for (unsigned int i = 0; i < lightPositions.size(); ++i) {
+			s_DeferredData->m_Shader->SetFloat3("u_Lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+			s_DeferredData->m_Shader->SetFloat3("u_Lights[" + std::to_string(i) + "].Color", lightColors[i]);
+			const float constant = 1.0; 
+			const float linear = 0.7;
+			const float quadratic = 1.8;
+			s_DeferredData->m_Shader->SetFloat("u_Lights[" + std::to_string(i) + "].Linear", linear);
+			s_DeferredData->m_Shader->SetFloat("u_Lights[" + std::to_string(i) + "].Quadratic", quadratic);
+			
+			const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
+			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+			s_DeferredData->m_Shader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", radius);
+		}
+		s_DeferredData->m_Shader->SetFloat3("u_ViewPos", camera.GetPosition());
+			
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i+1);
 		}
