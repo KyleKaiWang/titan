@@ -24,7 +24,7 @@ void main()
 {
 	//store info to g-buffer
 	g_PositionTexture = vec4(v_Position, 1.0f);
-	g_NormalTexture = vec4(normalize(v_Normal),1.0f);
+	g_NormalTexture = vec4(v_Normal,1.0f);
 	g_DiffuseTexture = texture( u_Texture, v_TexCoord );
 	g_DepthMap = vec4(vec3(LinearizeDepth(gl_FragCoord.z)/ far), 1.0f);
 }

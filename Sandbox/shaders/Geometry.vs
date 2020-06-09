@@ -15,7 +15,7 @@ uniform mat3 u_NormalMatrix;
 
 void main()
 {
-	v_Position = vec3(u_ViewMatrix * u_Model * vec4(a_Position, 1.0f));
+	v_Position = vec3(u_Model * vec4(a_Position, 1.0f));
 	v_Normal = normalize(u_NormalMatrix * a_Normal);
 	v_TexCoord = a_TexCoord;
 	

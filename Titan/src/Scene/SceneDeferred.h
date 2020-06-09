@@ -14,6 +14,7 @@ namespace Titan {
 		static void SetFrameBuffer(uint32_t width, uint32_t height);
 		static void BindingFramebuffer(PerspectiveCamera& camera);
 		static void DeferredPass(PerspectiveCamera& camera);
+		static void LightingPass(PerspectiveCamera& camera);
 
 		static std::vector<std::shared_ptr<Texture2D>> GBufferTextures;
 	};

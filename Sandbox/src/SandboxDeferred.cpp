@@ -50,11 +50,6 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	m_Shader->Bind();
 	m_Texture->Bind();
 
-	//PhongTexture
-	m_Shader->SetFloat3("Ka", glm::vec3(0.9f, 0.5f, 0.3f));
-	m_Shader->SetFloat3("Kd", glm::vec3(0.9f, 0.5f, 0.3f));
-	m_Shader->SetFloat3("Ks", glm::vec3(0.05f, 0.05f, 0.05f));
-	m_Shader->SetFloat("u_Shininess", 1.0f);
 	m_Shader->SetInt("u_Texture", 0);
 	for (int i = 1; i <= 5; ++i) {
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 1.0f, 0.0f));
