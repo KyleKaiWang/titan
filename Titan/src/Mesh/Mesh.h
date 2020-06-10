@@ -51,4 +51,10 @@ namespace Titan {
 	public:
 		Skybox(float size = 50.0f);
 	};
+
+	class Plane : public Mesh
+	{
+	public:
+		Plane(float xsize, float zsize, int xdivs, int zdivs, float smax = 1.0f, float tmax = 1.0f);
+	};
 }

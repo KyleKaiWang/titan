@@ -345,4 +345,68 @@ namespace Titan {
 			20,21,22,20,22,23
 		};
 	}
+
+	Plane::Plane(float xsize, float zsize, int xdivs, int zdivs, float smax, float tmax)
+	{
+		int nPoints = (xdivs + 1) * (zdivs + 1);
+		std::vector<float> p(3 * nPoints);
+		std::vector<float> n(3 * nPoints);
+		std::vector<float> tex(2 * nPoints);
+		//std::vector<float> tang(4 * nPoints);
+		std::vector<uint32_t> el(6 * xdivs * zdivs);
+
+		float x2 = xsize / 2.0f;
+		float z2 = zsize / 2.0f;
+		float iFactor = (float)zsize / zdivs;
+		float jFactor = (float)xsize / xdivs;
+		float texi = smax / xdivs;
+		float texj = tmax / zdivs;
+		float x, z;
+		int vidx = 0, tidx = 0;
+		for (int i = 0; i <= zdivs; i++) {
+			z = iFactor * i - z2;
+			for (int j = 0; j <= xdivs; j++) {
+				x = jFactor * j - x2;
+				float xPos = p[vidx] = x;
+				float yPos = p[vidx + 1] = 0.0f;
+				float zPos = p[vidx + 2] = z;
+				
+				m_Positions.push_back(glm::vec3(xPos, yPos, zPos));
+
+				float t1 = tex[tidx] = j * texi;
+				float t2 = tex[tidx + 1] = (zdivs - i) * texj;
+
+				m_UV.push_back(glm::vec2(t1, t2));
+
+				float n1 = n[vidx] = 0.0f;
+				float n2 = n[vidx + 1] = 1.0f;
+				float n3 = n[vidx + 2] = 0.0f;
+				m_Normals.push_back(glm::vec3(n1, n2, n3));
+
+				vidx += 3;
+				tidx += 2;
+			}
+		}
+
+		//for (int i = 0; i < nPoints; i++) {
+		//	tang[i * 4 + 0] = 1.0f;
+		//	tang[i * 4 + 1] = 0.0f;
+		//	tang[i * 4 + 2] = 0.0f;
+		//	tang[i * 4 + 3] = 1.0f;
+		//}
+
+		uint32_t rowStart, nextRowStart;
+		for (int i = 0; i < zdivs; i++) {
+			rowStart = (uint32_t)(i * (xdivs + 1));
+			nextRowStart = (uint32_t)((i + 1) * (xdivs + 1));
+			for (int j = 0; j < xdivs; j++) {
+				m_Indices.push_back(rowStart + j);
+				m_Indices.push_back(nextRowStart + j);
+				m_Indices.push_back(nextRowStart + j + 1);
+				m_Indices.push_back(rowStart + j);
+				m_Indices.push_back(nextRowStart + j + 1);
+				m_Indices.push_back(rowStart + j + 1);
+			}
+		}
+	}
 }
