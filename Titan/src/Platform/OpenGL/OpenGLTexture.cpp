@@ -72,9 +72,9 @@ namespace Titan {
 			glGenerateTextureMipmap(GL_TEXTURE_2D);
 		else  
 			glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		
+		for (auto pair : texDesc.Parameters)
+			glTextureParameteri(m_RendererID, pair.first, pair.second);
 	}
 	
 	OpenGLTexture2D::~OpenGLTexture2D()
