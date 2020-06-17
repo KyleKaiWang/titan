@@ -1,6 +1,8 @@
 #include "tpch.h"
 #include "Renderer.h"
 #include "Application.h"
+#include "Lighting.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Titan {
 
@@ -46,12 +48,31 @@ namespace Titan {
 		glm::mat4 mv = s_SceneData->ViewMatrix * transform;
 		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 
-		//Lighting
-		shader->SetFloat3("u_LightIntensity", glm::vec3(1.0f));
-		shader->SetFloat4("u_LightPosition", s_SceneData->ViewMatrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
-
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 		//vertexArray->Unbind();
+	}
+
+	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, Light& light, const glm::mat4& transform)
+	{
+		shader->Bind();
+		shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		shader->SetMat4("u_ProjectionMatrix", s_SceneData->ProjectionMatrix);
+		shader->SetMat4("u_ViewMatrix", s_SceneData->ViewMatrix);
+		shader->SetMat4("u_Model", transform);
+
+		glm::mat4 mv = s_SceneData->ViewMatrix * transform;
+		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
+
+		//Lighting
+		shader->SetFloat3("u_LightIntensity", light.Intensity);
+		shader->SetFloat4("u_LightPosition", glm::vec4(light.Position, 1.0f));
+		shader->SetMat4("u_LightSpaceMatrix", light.SpaceMatrix);
+		//shader->SetMat4("u_LightProjectionMatrix", light.ProjectionMatrix);
+		//shader->SetMat4("u_LightViewMatrix", light.ViewMatrix);
+
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+		vertexArray->Unbind();
 	}
 }
