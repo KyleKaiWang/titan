@@ -1,6 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/Lighting.h"
 
 namespace Titan {
 
@@ -8,14 +9,19 @@ namespace Titan {
 	{
 	public:
 		static void Init();
-		static void Update(float t);
-		static void Render(PerspectiveCamera& camera);
-		static void CreateGBufferTexture(std::shared_ptr<Texture2D>& tex, uint32_t slot, uint32_t format);
 		static void SetFrameBuffer(uint32_t width, uint32_t height);
-		static void BindingFramebuffer(PerspectiveCamera& camera);
-		static void DeferredPass(PerspectiveCamera& camera);
-		static void LightingPass(PerspectiveCamera& camera);
+		static void BeginGeometryPass();
+		static void EndGeometryPass();
+		static void BeginShadowPass();
+		static void EndShadowPass();
+		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
+		static void PointLightPass(PerspectiveCamera& camera);
+
+		static const std::shared_ptr<Shader>& GetGeometryShader();
+		static const std::shared_ptr<Shader>& GetShadowMapShader();
+		static const std::shared_ptr<Texture2D>& GetShadowMapTexture();
 
 		static std::vector<std::shared_ptr<Texture2D>> GBufferTextures;
+
 	};
 }

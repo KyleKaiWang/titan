@@ -16,8 +16,9 @@ public:
 private:
 	Titan::CameraController m_CameraController;
 	Titan::Ref<Titan::Texture2D> m_Texture;
-	Titan::Ref<Titan::Shader> m_Shader;
+	Titan::Ref<Titan::Texture2D> m_SimpleQuad;
 	glm::vec3 m_Color = { 0.2f, 0.3f, 0.8f };
+	Titan::Light m_Light;
 	Titan::Mesh* m_DrawMesh;
 	Titan::Mesh* m_DrawMesh2;
 
