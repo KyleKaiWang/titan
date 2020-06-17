@@ -5,8 +5,8 @@
 
 namespace Titan {
 
-	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferDesc& spec)
-		: m_Desc(spec)
+	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferDesc& framebufferDesc)
+		: m_FramebufferDesc(framebufferDesc)
 	{
 		Init();
 	}
@@ -19,26 +19,31 @@ namespace Titan {
 	void OpenGLFramebuffer::Init()
 	{
 		glCreateFramebuffers(1, &m_RendererID);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-
-		for (int i = 0; i < m_Desc.nrColorAttachment; ++i)
+		//Color Attachments
+		for (uint32_t i = 0; i < m_FramebufferDesc.nrColorAttachment; ++i)
 		{
-			std::shared_ptr<Texture2D> tex = Texture2D::Create(m_Desc.TexDesc);
+			std::shared_ptr<Texture2D> tex = Texture2D::Create(m_FramebufferDesc.TexDesc);
 			glNamedFramebufferTexture(m_RendererID, GL_COLOR_ATTACHMENT0 + i, tex->GetTextureID(), 0);
 			m_ColorAttachments.push_back(tex);
 		}
-		
+
 		//Depth and Stencil
 		TextureDesc desc;
-		desc.Width = m_Desc.Width;
-		desc.Height = m_Desc.Height;
+		desc.Width = m_FramebufferDesc.Width;
+		desc.Height = m_FramebufferDesc.Height;
 		desc.Format = GL_DEPTH24_STENCIL8;
+		desc.MipLevels = 0;
+		desc.IsDepth = true;
+		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+		
+		m_DepthAttachment = Texture2D::Create(desc);
+		glNamedFramebufferTexture(m_RendererID, GL_DEPTH_STENCIL_ATTACHMENT, m_DepthAttachment->GetTextureID(), 0);
+		unsigned int result = glCheckNamedFramebufferStatus(m_RendererID, GL_FRAMEBUFFER);
+		TITAN_CORE_ASSERT(result == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!", result);
 
-		std::shared_ptr<Texture2D> depthTex = Texture2D::Create(m_Desc.TexDesc);
-		glNamedFramebufferTexture(m_RendererID, GL_DEPTH_STENCIL_ATTACHMENT, depthTex->GetTextureID(), 0);
-		m_DepthAttachment = depthTex;
-
-		TITAN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

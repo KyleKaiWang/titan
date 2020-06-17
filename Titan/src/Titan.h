@@ -22,11 +22,13 @@
 #include "Renderer/RenderCommand.h"
 #include "Scene/Scene.h"
 #include "Scene/SceneDeferred.h"
+#include "Renderer/Lighting.h"
 
 #include "Renderer/Buffer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Texture.h"
 #include "Renderer/VertexArray.h"
+#include "Renderer/FrameBuffer.h"
 
 #include "Renderer/OrthographicCamera.h"
 #include "Renderer/OrthographicCameraController.h"

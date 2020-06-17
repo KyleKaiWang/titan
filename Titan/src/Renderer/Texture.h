@@ -11,6 +11,7 @@ namespace Titan {
 		uint32_t Height;
 		uint32_t MipLevels;
 		uint32_t Format;
+		bool IsDepth = false;
 		std::vector<std::pair<uint32_t, uint32_t>> Parameters;
 	};
 

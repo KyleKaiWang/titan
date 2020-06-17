@@ -8,24 +8,24 @@ namespace Titan {
 	class OpenGLFramebuffer : public Framebuffer
 	{
 	public:
-		OpenGLFramebuffer(const FramebufferDesc& spec);
+		OpenGLFramebuffer(const FramebufferDesc& framebufferDesc);
 		virtual ~OpenGLFramebuffer();
 
 		void Init();
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
-
+		virtual uint32_t GetFramebufferID() const override { return m_RendererID; }
 		virtual std::vector<std::shared_ptr<Texture2D>> GetColorAttachments() const override { return m_ColorAttachments; }
-		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index) const;
+		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index) const override;
 		virtual std::shared_ptr<Texture2D> GetDepthAttachments() const override { return m_DepthAttachment; }
-		virtual const FramebufferDesc& GetDesc() const override { return m_Desc; }
+		virtual const FramebufferDesc& GetFramebufferDesc() const override { return m_FramebufferDesc; }
 
 	private:
 		uint32_t m_RendererID;
 		std::vector<std::shared_ptr<Texture2D>> m_ColorAttachments;
 		std::shared_ptr<Texture2D> m_DepthAttachment;
-		FramebufferDesc m_Desc;
+		FramebufferDesc m_FramebufferDesc;
 	};
 
 }
