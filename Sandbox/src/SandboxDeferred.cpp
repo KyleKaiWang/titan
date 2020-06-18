@@ -22,6 +22,9 @@ void SandboxDeferred::OnAttach()
 	m_DrawMesh2 = static_cast<Titan::Mesh*>(new Titan::Plane(100.0f, 100.0f, 100, 100));
 	m_DrawMesh2->Init();
 
+	m_DrawMesh3 = static_cast<Titan::Mesh*>(new Titan::Sphere());
+	m_DrawMesh3->Init();
+
 	//Test Basic Object Rendering
 	m_Texture = Titan::Texture2D::Create("assets/textures/Brick.png");
 	m_SimpleQuad = Titan::Texture2D::Create(1, 1);
@@ -42,18 +45,17 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 
-	//Deferred Shading Pass1
-	Titan::SceneDeferred::BeginGeometryPass();
-
 	//Titan::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	//Titan::RenderCommand::Clear();
 
-	auto renderScene = [&](const std::shared_ptr<Titan::Shader>& shader){
+	auto renderScene = [&](const std::shared_ptr<Titan::Shader>& shader, bool shadowPass){
 		Titan::Renderer::BeginScene(m_CameraController.GetCamera());
 		shader->Bind();
-		m_Texture->Bind();
-		
-		shader->SetInt("u_Texture", 0);
+		if (!shadowPass) {
+			m_Texture->Bind();
+			shader->SetInt("u_Texture", 0);
+			shader->SetFloat4("u_Color", glm::vec4(1.0f));
+		}
 		for (int i = 1; i <= 5; ++i) {
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 1.0f, 0.0f));
 			Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
@@ -62,22 +64,28 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 			transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 5.0f, 0.0f));
 			Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
 		}
-		m_SimpleQuad->Bind();
-		shader->SetInt("u_Texture", 0);
-		shader->SetFloat4("u_Color", glm::vec4(0.3,0.3,0.3,1.0));
+		if (!shadowPass) {
+			m_SimpleQuad->Bind();
+			shader->SetInt("u_Texture", 0);
+			shader->SetFloat4("u_Color", glm::vec4(0.3,0.3,0.3,1.0));
+		}
 		glm::mat4 transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -0.0f, 0.0f));
 		Titan::Renderer::Submit(shader, m_DrawMesh2->GetMeshVertexArray(), m_Light, transform2);
+		if (!shadowPass) shader->SetFloat4("u_Color", glm::vec4(1.0));
+		glm::mat4 transform3 = glm::translate(glm::mat4(1.0f), m_Light.Position) * glm::scale(glm::mat4(1.0f), { 0.1, 0.1, 0.1f });
+		Titan::Renderer::Submit(shader, m_DrawMesh3->GetMeshVertexArray(), m_Light, transform3);
 		shader->Unbind();
 		Titan::Renderer::EndScene();
 	};
 
 	//Geometry Pass
-	renderScene(Titan::SceneDeferred::GetGeometryShader());
+	Titan::SceneDeferred::BeginGeometryPass();
+	renderScene(Titan::SceneDeferred::GetGeometryShader(), false);
 	Titan::SceneDeferred::EndGeometryPass();
-	Titan::SceneDeferred::BeginShadowPass();
 
 	//Shadow Map Pass
-	renderScene(Titan::SceneDeferred::GetShadowMapShader());
+	Titan::SceneDeferred::BeginShadowPass();
+	renderScene(Titan::SceneDeferred::GetShadowMapShader(), true);
 	Titan::SceneDeferred::EndShadowPass();
 
 	//Directional Light Pass

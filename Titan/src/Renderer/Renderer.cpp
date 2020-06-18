@@ -66,10 +66,8 @@ namespace Titan {
 
 		//Lighting
 		shader->SetFloat3("u_LightIntensity", light.Intensity);
-		shader->SetFloat4("u_LightPosition", glm::vec4(light.Position, 1.0f));
+		shader->SetFloat4("u_LightPos", glm::vec4(light.Position, 1.0f));
 		shader->SetMat4("u_LightSpaceMatrix", light.SpaceMatrix);
-		//shader->SetMat4("u_LightProjectionMatrix", light.ProjectionMatrix);
-		//shader->SetMat4("u_LightViewMatrix", light.ViewMatrix);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);

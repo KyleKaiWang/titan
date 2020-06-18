@@ -144,10 +144,10 @@ namespace Titan {
 			FramebufferDesc desc;
 			desc.Width = width;
 			desc.Height = height;
-			desc.nrColorAttachment = 1;
+			desc.nrColorAttachment = 0;
 			desc.TexDesc = texDesc;
 			s_DeferredData->ShadowMapFBO = Framebuffer::Create(desc);
-			s_DeferredData->g_ShadowMap = s_DeferredData->ShadowMapFBO->GetColorAttachment(0);
+			s_DeferredData->g_ShadowMap = s_DeferredData->ShadowMapFBO->GetDepthAttachment();
 			GBufferTextures.push_back(s_DeferredData->g_ShadowMap);
 		}
 	}
@@ -164,28 +164,23 @@ namespace Titan {
 
 	void SceneDeferred::EndGeometryPass()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		s_DeferredData->GBufferFBO->Unbind();
 	}
 
 	void SceneDeferred::BeginShadowPass()
 	{
-		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0};
-		glNamedFramebufferDrawBuffers(s_DeferredData->ShadowMapFBO->GetFramebufferID(), 1, attachments);
-		glBindFramebuffer(GL_FRAMEBUFFER, s_DeferredData->ShadowMapFBO->GetFramebufferID());
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		s_DeferredData->ShadowMapFBO->Bind();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, s_DeferredData->ShadowMapFBO->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		s_DeferredData->ShadowMapShader->Bind();
 	}
 
 	void SceneDeferred::EndShadowPass()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		s_DeferredData->ShadowMapShader->Unbind();
-		auto& window = Application::Get().GetWindow();
-		glViewport(0, 0, window.GetWidth(), window.GetHeight());
 		glCullFace(GL_BACK);
+		s_DeferredData->ShadowMapFBO->Unbind();
+		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
 	void SceneDeferred::DirectionalLightPass(PerspectiveCamera& camera, Light& light)

@@ -21,6 +21,7 @@ private:
 	Titan::Light m_Light;
 	Titan::Mesh* m_DrawMesh;
 	Titan::Mesh* m_DrawMesh2;
+	Titan::Mesh* m_DrawMesh3;
 
 	Titan::Ref<Titan::TextureCube> m_TextureCube;
 	Titan::Ref<Titan::Shader> m_SkyboxShader;
