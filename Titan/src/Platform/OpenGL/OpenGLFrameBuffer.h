@@ -18,7 +18,7 @@ namespace Titan {
 		virtual uint32_t GetFramebufferID() const override { return m_RendererID; }
 		virtual std::vector<std::shared_ptr<Texture2D>> GetColorAttachments() const override { return m_ColorAttachments; }
 		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index) const override;
-		virtual std::shared_ptr<Texture2D> GetDepthAttachments() const override { return m_DepthAttachment; }
+		virtual std::shared_ptr<Texture2D> GetDepthAttachment() const override { return m_DepthAttachment; }
 		virtual const FramebufferDesc& GetFramebufferDesc() const override { return m_FramebufferDesc; }
 
 	private:
