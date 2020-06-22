@@ -1,18 +1,63 @@
 #include "tpch.h"
 #include "Mesh.h"
 #include <glm/gtc/constants.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/LogStream.hpp>
 
 const float TAU = 6.2831853071;
 
 namespace Titan {
+	
+	const unsigned int ImportFlags =
+		aiProcess_CalcTangentSpace |
+		aiProcess_Triangulate |
+		aiProcess_SortByPType |
+		aiProcess_PreTransformVertices |
+		aiProcess_GenNormals |
+		aiProcess_GenUVCoords |
+		aiProcess_OptimizeMeshes |
+		aiProcess_Debone |
+		aiProcess_ValidateDataStructure;
 
 	Mesh::Mesh()
 	{
 
 	}
 
-	Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uv, std::vector<glm::vec3> normals, std::vector<glm::vec3> tangents, std::vector<glm::vec3> bitangents, std::vector<unsigned int> indices)
-		:m_Positions(positions), m_UV(uv), m_Normals(normals), m_Indices(indices)
+	Mesh::Mesh(const aiMesh* mesh)
+	{
+		TITAN_ASSERT(mesh->HasPositions(), "Mesh doesn't have positions");
+		TITAN_ASSERT(mesh->HasNormals(), "Mesh doesn't have Normals");
+
+		for (size_t i = 0; i < mesh->mNumVertices; ++i)
+		{
+			m_Positions.push_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
+			m_Normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
+
+			if (mesh->HasTangentsAndBitangents()) {
+				m_Tangent.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
+				m_Bitangent.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
+			}
+			if (mesh->HasTextureCoords(0)) {
+				m_TexCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
+			}
+		}
+
+		m_Indices.reserve(mesh->mNumFaces * 3);
+		for (size_t i = 0; i < mesh->mNumFaces; ++i)
+		{
+			assert(mesh->mFaces[i].mNumIndices == 3);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[0]);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[1]);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[2]);
+		}
+	}
+
+	Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> texcoord, std::vector<glm::vec3> normals, std::vector<glm::vec3> tangents, std::vector<glm::vec3> bitangents, std::vector<unsigned int> indices)
+		:m_Positions(positions), m_TexCoords(texcoord), m_Normals(normals), m_Indices(indices)
 	{
 
 	}
@@ -24,7 +69,7 @@ namespace Titan {
 
 	void Mesh::Init()
 	{
-		bool uv = false, normal = false;
+		bool texcoord = false, normal = false;
 		std::vector<float> data;
 		for (int i = 0; i < m_Positions.size(); ++i)
 		{
@@ -32,11 +77,11 @@ namespace Titan {
 			data.push_back(m_Positions[i].y);
 			data.push_back(m_Positions[i].z);
 			
-			if (m_UV.size() > 0)
+			if (m_TexCoords.size() > 0)
 			{
-				uv = true;
-				data.push_back(m_UV[i].x);
-				data.push_back(m_UV[i].y);
+				texcoord = true;
+				data.push_back(m_TexCoords[i].x);
+				data.push_back(m_TexCoords[i].y);
 			}
 			if (m_Normals.size() > 0)
 			{
@@ -50,7 +95,7 @@ namespace Titan {
 		m_VertexArray = VertexArray::Create();
 		m_VertexBuffer = VertexBuffer::Create(&data[0], data.size() * sizeof(float));
 		
-		if (uv && normal)
+		if (texcoord && normal)
 		{
 			m_VertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
@@ -58,7 +103,7 @@ namespace Titan {
 				{ ShaderDataType::Float3, "a_Normal" }
 			});
 		}
-		else if (uv)
+		else if (texcoord)
 		{
 			m_VertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
@@ -86,6 +131,38 @@ namespace Titan {
 			m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 		}
 		m_VertexArray->Unbind();
+	}
+
+	std::shared_ptr<Mesh> Mesh::Create(const std::string& filename)
+	{
+		std::printf("Loading mesh: %s\n", filename.c_str());
+
+		std::shared_ptr<Mesh> mesh;
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(filename, ImportFlags);
+		if (scene && scene->HasMeshes()) {
+			mesh = std::shared_ptr<Mesh>(new Mesh{ scene->mMeshes[0] });
+		}
+		else {
+			TITAN_CORE_ASSERT(false, "Failed to load mesh file: + %s ", filename);
+		}
+		return mesh;
+	}
+
+	std::shared_ptr<Mesh> Mesh::CreateByData(const std::string& data)
+	{
+		std::shared_ptr<Mesh> mesh;
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFileFromMemory(data.c_str(), data.length(), ImportFlags, "nff");
+		if (scene && scene->HasMeshes()) {
+			mesh = std::shared_ptr<Mesh>(new Mesh{ scene->mMeshes[0] });
+		}
+		else {
+			TITAN_CORE_ASSERT(false, "Failed to create mesh from data: + %s ", data);
+		}
+		return mesh;
 	}
 
 	Cube::Cube(float _size)
@@ -125,7 +202,7 @@ namespace Titan {
 			glm::vec3(-size,  size, -size)
 		};
 
-		m_UV = std::vector<glm::vec2>{
+		m_TexCoords = std::vector<glm::vec2>{
 			// Front
 			glm::vec2(0.0f, 0.0f), 
 			glm::vec2(1.0f, 0.0f), 
@@ -204,7 +281,7 @@ namespace Titan {
 	{
 		m_Positions.resize((numSteps1 + 1) * (numSteps2 + 1));
 		m_Normals.resize((numSteps1 + 1) * (numSteps2 + 1));
-		m_UV.resize((numSteps1 + 1) * (numSteps2 + 1));
+		m_TexCoords.resize((numSteps1 + 1) * (numSteps2 + 1));
 
 		std::vector<glm::vec3> p(numSteps1 + 1);
 		float a = 0.0f;
@@ -234,8 +311,8 @@ namespace Titan {
 
 				m_Positions[i * (numSteps2 + 1) + j] = p[i] + c * u + s * v;
 
-				m_UV[i * (numSteps2 + 1) + j].x = ((float)i) / ((float)numSteps1) * TAU;
-				m_UV[i * (numSteps2 + 1) + j].y = ((float)j) / ((float)numSteps2);
+				m_TexCoords[i * (numSteps2 + 1) + j].x = ((float)i) / ((float)numSteps1) * TAU;
+				m_TexCoords[i * (numSteps2 + 1) + j].y = ((float)j) / ((float)numSteps2);
 				m_Normals[i * (numSteps2 + 1) + j] = glm::normalize(c * u + s * v);
 				a += step;
 			}
@@ -278,7 +355,7 @@ namespace Titan {
 				float zPos = std::sin(xSegment * TAU) * std::sin(ySegment * glm::pi<float>());
 
 				m_Positions.push_back(glm::vec3(xPos, yPos, zPos));
-				m_UV.push_back(glm::vec2(xSegment, ySegment));
+				m_TexCoords.push_back(glm::vec2(xSegment, ySegment));
 				m_Normals.push_back(glm::vec3(xPos, yPos, zPos));
 			}
 		}
@@ -376,7 +453,7 @@ namespace Titan {
 				float t1 = tex[tidx] = j * texi;
 				float t2 = tex[tidx + 1] = (zdivs - i) * texj;
 
-				m_UV.push_back(glm::vec2(t1, t2));
+				m_TexCoords.push_back(glm::vec2(t1, t2));
 
 				float n1 = n[vidx] = 0.0f;
 				float n2 = n[vidx + 1] = 1.0f;

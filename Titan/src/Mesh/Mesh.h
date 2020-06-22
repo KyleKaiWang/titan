@@ -4,23 +4,33 @@
 #include "Renderer/VertexArray.h"
 #include "Renderer/Buffer.h"
 
+struct aiMesh;
+
 namespace Titan {
 	
+
 	class Mesh
 	{
 	public:
+
 		Mesh();
+		Mesh(const aiMesh* mesh);
 		Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uv, std::vector<glm::vec3> normals, std::vector<glm::vec3> tangents, std::vector<glm::vec3> bitangents, std::vector<unsigned int> indices);
 		virtual ~Mesh();
 
 		virtual void Init();
 
 		std::vector<glm::vec3> m_Positions;
-		std::vector<glm::vec2> m_UV;
+		std::vector<glm::vec2> m_TexCoords;
 		std::vector<glm::vec3> m_Normals;
+		std::vector<glm::vec3> m_Tangent;
+		std::vector<glm::vec3> m_Bitangent;
 
 		std::vector<uint32_t> m_Indices;
 		inline const std::shared_ptr<VertexArray>& GetMeshVertexArray() { return m_VertexArray; }
+
+		static std::shared_ptr<Mesh> Create(const std::string& filename);
+		static std::shared_ptr<Mesh> CreateByData(const std::string& data);
 
 	protected:
 		std::shared_ptr<VertexArray> m_VertexArray;
