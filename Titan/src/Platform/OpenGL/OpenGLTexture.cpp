@@ -14,7 +14,8 @@ namespace Titan {
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
-		
+
+
 		glGenerateTextureMipmap(m_RendererID);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -22,6 +23,9 @@ namespace Titan {
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		
+		uint32_t whiteTextureData = 0xffffffff;
+		SetData(&whiteTextureData, sizeof(uint32_t));
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
@@ -67,8 +71,6 @@ namespace Titan {
 		
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, texDesc.Width, texDesc.Height);
-		//glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		//glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, texDesc.Width, texDesc.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
 		if(texDesc.MipLevels != 0) 
 			glGenerateTextureMipmap(m_RendererID);
