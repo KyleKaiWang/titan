@@ -6,29 +6,59 @@ namespace Titan {
 	Material::Material()
 	{
 	}
+
 	Material::~Material()
+	{
+	}
+
+	void Material::Bind(const std::shared_ptr<Shader>& shader)
 	{
 	}
 
 	PhongMaterial::PhongMaterial()
 	{
-		m_Shader = Shader::Create("shaders/PhongTexture.vs", "shaders/PhongTexture.fs");
-		PhongTexture = Texture2D::Create("assets/textures/Brick.png");
+		m_Texture = Texture2D::Create(1,1);
+		m_Phong = std::make_shared<PhongElements>();
+		m_Phong->Ambient = glm::vec3(0.4);
+		m_Phong->Diffuse = glm::vec3(0.3);
+		m_Phong->Specular = glm::vec3(0.05f);
+		m_Phong->Shininess = 16.0;
 	}
 
 	PhongMaterial::~PhongMaterial()
 	{
 	}
 
-	void PhongMaterial::BindPhongParam(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess)
+	void PhongMaterial::Bind(const std::shared_ptr<Shader>& shader)
 	{
-		PhongTexture->Bind();
-		m_Shader->Bind();
-		m_Shader->SetFloat3("Ka", ambient);
-		m_Shader->SetFloat3("Kd", diffuse);
-		m_Shader->SetFloat3("Ks", specular);
-		m_Shader->SetFloat("u_Shininess", shininess);
-		m_Shader->SetFloat4("u_Color", glm::vec4(1.0f));
-		m_Shader->SetInt("u_Texture", 0);
+		shader->Bind();
+		shader->SetFloat3("u_Ambient", GetPhong()->Ambient);
+		shader->SetFloat3("u_Diffuse", GetPhong()->Diffuse);
+		shader->SetFloat3("u_Specular", GetPhong()->Specular);
+		shader->SetFloat("u_Shininess", GetPhong()->Shininess);
+		
+		m_Texture->Bind();
+		shader->SetInt("u_Texture", 0);
+	}
+
+	PBRMaterial::PBRMaterial()
+	{
+		m_PBR = std::make_shared<PBRTextures>();
+	}
+
+	PBRMaterial::~PBRMaterial()
+	{
+	}
+
+	void PBRMaterial::Bind(const std::shared_ptr<Shader>& shader)
+	{
+		m_PBR->Albedo->Bind(0);
+		m_PBR->Normal->Bind(1);
+		m_PBR->Metallic->Bind(2);
+		m_PBR->Roughness->Bind(3);
+		shader->SetInt("u_Albedo", 0);
+		shader->SetInt("u_Normal", 1);
+		shader->SetInt("u_Metallic", 2);
+		shader->SetInt("u_Roughness", 3);
 	}
 }

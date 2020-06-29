@@ -7,7 +7,6 @@ layout(location = 2) in vec3 a_Normal;
 out vec3 v_Position;
 out vec3 v_Normal;
 out vec2 v_TexCoord;
-out vec4 v_LightSpacePosition;
 
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;

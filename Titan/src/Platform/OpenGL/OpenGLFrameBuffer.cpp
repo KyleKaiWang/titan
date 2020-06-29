@@ -28,19 +28,24 @@ namespace Titan {
 		}
 
 		//Depth and Stencil
-		TextureDesc desc;
-		desc.Width = m_FramebufferDesc.Width;
-		desc.Height = m_FramebufferDesc.Height;
-		desc.Format = GL_DEPTH_COMPONENT24;
-		desc.MipLevels = 0;
-		desc.IsDepth = true;
-		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-		desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-		
-		m_DepthAttachment = Texture2D::Create(desc);
-		glNamedFramebufferTexture(m_RendererID, GL_DEPTH_ATTACHMENT, m_DepthAttachment->GetTextureID(), 0);
+		if (m_FramebufferDesc.Depth) 
+		{
+			TextureDesc desc;
+			desc.Width = m_FramebufferDesc.Width;
+			desc.Height = m_FramebufferDesc.Height;
+			desc.Format = GL_DEPTH_COMPONENT24;
+			desc.MipLevels = 0;
+			desc.IsDepth = true;
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE));
+			desc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL));
+
+			m_DepthAttachment = Texture2D::Create(desc);
+			glNamedFramebufferTexture(m_RendererID, GL_DEPTH_ATTACHMENT, m_DepthAttachment->GetTextureID(), 0);
+		}
 		unsigned int result = glCheckNamedFramebufferStatus(m_RendererID, GL_FRAMEBUFFER);
 		TITAN_CORE_ASSERT(result == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!", result);
 

@@ -24,36 +24,7 @@ namespace Titan {
 
 	Mesh::Mesh()
 	{
-
-	}
-
-	Mesh::Mesh(const aiMesh* mesh)
-	{
-		TITAN_ASSERT(mesh->HasPositions(), "Mesh doesn't have positions");
-		TITAN_ASSERT(mesh->HasNormals(), "Mesh doesn't have Normals");
-
-		for (size_t i = 0; i < mesh->mNumVertices; ++i)
-		{
-			m_Positions.push_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
-			m_Normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
-
-			if (mesh->HasTangentsAndBitangents()) {
-				m_Tangent.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
-				m_Bitangent.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
-			}
-			if (mesh->HasTextureCoords(0)) {
-				m_TexCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
-			}
-		}
-
-		m_Indices.reserve(mesh->mNumFaces * 3);
-		for (size_t i = 0; i < mesh->mNumFaces; ++i)
-		{
-			assert(mesh->mFaces[i].mNumIndices == 3);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[0]);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[1]);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[2]);
-		}
+		m_Material = std::make_shared<PhongMaterial>();
 	}
 
 	Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> texcoord, std::vector<glm::vec3> normals, std::vector<glm::vec3> tangents, std::vector<glm::vec3> bitangents, std::vector<unsigned int> indices)
@@ -133,16 +104,45 @@ namespace Titan {
 		m_VertexArray->Unbind();
 	}
 
-	std::shared_ptr<Mesh> Mesh::Create(const std::string& filename)
+	TriangleMesh::TriangleMesh(const aiMesh* mesh)
+	{
+		TITAN_ASSERT(mesh->HasPositions(), "Mesh doesn't have positions");
+		TITAN_ASSERT(mesh->HasNormals(), "Mesh doesn't have Normals");
+
+		for (size_t i = 0; i < mesh->mNumVertices; ++i)
+		{
+			m_Positions.push_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
+			m_Normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
+
+			if (mesh->HasTangentsAndBitangents()) {
+				m_Tangent.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
+				m_Bitangent.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
+			}
+			if (mesh->HasTextureCoords(0)) {
+				m_TexCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
+			}
+		}
+
+		m_Indices.reserve(mesh->mNumFaces * 3);
+		for (size_t i = 0; i < mesh->mNumFaces; ++i)
+		{
+			assert(mesh->mFaces[i].mNumIndices == 3);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[0]);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[1]);
+			m_Indices.push_back(mesh->mFaces[i].mIndices[2]);
+		}
+	}
+
+	std::shared_ptr<TriangleMesh> TriangleMesh::Create(const std::string& filename)
 	{
 		std::printf("Loading mesh: %s\n", filename.c_str());
 
-		std::shared_ptr<Mesh> mesh;
+		std::shared_ptr<TriangleMesh> mesh;
 		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFile(filename, ImportFlags);
 		if (scene && scene->HasMeshes()) {
-			mesh = std::shared_ptr<Mesh>(new Mesh{ scene->mMeshes[0] });
+			mesh = std::shared_ptr<TriangleMesh>(new TriangleMesh{ scene->mMeshes[0] });
 		}
 		else {
 			TITAN_CORE_ASSERT(false, "Failed to load mesh file: + %s ", filename);
@@ -150,14 +150,14 @@ namespace Titan {
 		return mesh;
 	}
 
-	std::shared_ptr<Mesh> Mesh::CreateByData(const std::string& data)
+	std::shared_ptr<TriangleMesh> TriangleMesh::CreateByData(const std::string& data)
 	{
-		std::shared_ptr<Mesh> mesh;
+		std::shared_ptr<TriangleMesh> mesh;
 		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFileFromMemory(data.c_str(), data.length(), ImportFlags, "nff");
 		if (scene && scene->HasMeshes()) {
-			mesh = std::shared_ptr<Mesh>(new Mesh{ scene->mMeshes[0] });
+			mesh = std::shared_ptr<TriangleMesh>(new TriangleMesh{ scene->mMeshes[0] });
 		}
 		else {
 			TITAN_CORE_ASSERT(false, "Failed to create mesh from data: + %s ", data);

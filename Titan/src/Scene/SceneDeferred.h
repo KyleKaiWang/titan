@@ -16,9 +16,11 @@ namespace Titan {
 		static void EndShadowPass();
 		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
 		static void PointLightPass(PerspectiveCamera& camera);
+		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
 
 		static const std::shared_ptr<Shader>& GetGeometryShader();
 		static const std::shared_ptr<Shader>& GetShadowMapShader();
+		static const std::shared_ptr<Shader>& GetPBRShader();
 		static const std::shared_ptr<Texture2D>& GetShadowMapTexture();
 
 		static std::vector<std::shared_ptr<Texture2D>> GBufferTextures;

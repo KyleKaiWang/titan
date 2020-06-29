@@ -15,25 +15,16 @@ public:
 
 private:
 	Titan::CameraController m_CameraController;
-	Titan::Ref<Titan::Texture2D> m_Texture;
-	Titan::Ref<Titan::Texture2D> m_SimpleQuad;
-	glm::vec3 m_Color = { 0.2f, 0.3f, 0.8f };
 	Titan::Light m_Light;
-	Titan::Mesh* m_DrawMesh;
-	Titan::Mesh* m_DrawMesh2;
-	Titan::Mesh* m_DrawMesh3;
+	std::shared_ptr<Titan::Mesh> m_DrawMesh;
+	std::shared_ptr<Titan::Mesh> m_DrawMesh2;
+	std::shared_ptr<Titan::Mesh> m_DrawMesh3;
 
 	Titan::Ref<Titan::TextureCube> m_TextureCube;
 	Titan::Ref<Titan::Shader> m_SkyboxShader;
 	Titan::Mesh* m_DrawSkybox;
 
 	std::shared_ptr<Titan::Scene> m_Scene;
-	std::shared_ptr<Titan::PhongMaterial> m_PhongMaterial;
-
-	glm::vec3 m_Ambient = glm::vec3(0.9f, 0.5f, 0.3f);
-	glm::vec3 m_Diffuse = glm::vec3(0.9f, 0.5f, 0.3f);
-	glm::vec3 m_Specular = glm::vec3(0.05f, 0.05f, 0.05f);
-	float m_Shininess = 100.0f;
 
 	//Titan::ParticleSystem m_ParticleSystem;
 	//Titan::Particle m_Particle;

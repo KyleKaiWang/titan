@@ -10,6 +10,7 @@ namespace Titan {
 		uint32_t Width, Height;
 		uint32_t nrColorAttachment = 1;
 		TextureDesc TexDesc;
+		bool Depth = true;
 		bool SwapChainTarget = false;
 	};
 

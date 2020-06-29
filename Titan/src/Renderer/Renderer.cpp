@@ -50,7 +50,7 @@ namespace Titan {
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
-		//vertexArray->Unbind();
+		vertexArray->Unbind();
 	}
 
 	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, Light& light, const glm::mat4& transform)
@@ -65,12 +65,32 @@ namespace Titan {
 		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 
 		//Lighting
-		shader->SetFloat3("u_LightIntensity", light.Intensity);
-		shader->SetFloat4("u_LightPos", glm::vec4(light.Position, 1.0f));
-		shader->SetMat4("u_LightSpaceMatrix", light.SpaceMatrix);
+		light.ShaderBinding(shader);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 		vertexArray->Unbind();
+	}
+
+	void Renderer::Submit(const std::shared_ptr<Shader>& shader,const std::shared_ptr<Mesh>& mesh, Light& light, const glm::mat4& transform)
+	{
+		shader->Bind();
+		shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		shader->SetMat4("u_ProjectionMatrix", s_SceneData->ProjectionMatrix);
+		shader->SetMat4("u_ViewMatrix", s_SceneData->ViewMatrix);
+		shader->SetMat4("u_Model", transform);
+
+		glm::mat4 mv = s_SceneData->ViewMatrix * transform;
+		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
+
+		//Lighting
+		light.ShaderBinding(shader);
+
+		//PBR Texture binding
+		mesh->GetMeshMaterial()->Bind(shader);
+
+		mesh->GetMeshVertexArray()->Bind();
+		RenderCommand::DrawIndexed(mesh->GetMeshVertexArray());
+		mesh->GetMeshVertexArray()->Unbind();
 	}
 }

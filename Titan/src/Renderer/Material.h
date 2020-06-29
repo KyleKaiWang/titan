@@ -6,15 +6,42 @@ namespace Titan {
 
 	class Texture2D;
 
+	struct PBRTextures
+	{
+		std::shared_ptr<Texture2D> Albedo;
+		std::shared_ptr<Texture2D> Normal;
+		std::shared_ptr<Texture2D> Metallic;
+		std::shared_ptr<Texture2D> Roughness;
+	};
+
+	struct PhongElements
+	{
+		glm::vec3 Ambient = glm::vec3(0.9f, 0.5f, 0.3f);
+		glm::vec3 Diffuse = glm::vec3(0.9f, 0.5f, 0.3f);
+		glm::vec3 Specular = glm::vec3(0.05f, 0.05f, 0.05f);
+		float Shininess = 16.0;
+	};
+
 	class Material
 	{
 	public:
 		Material();
 		virtual ~Material();
 
-		inline const std::shared_ptr<Shader>& GetShader() const { return m_Shader; }
-	protected:
-		std::shared_ptr<Shader> m_Shader;
+		virtual void Bind(const std::shared_ptr<Shader>& shader);
+	};
+
+	class PBRMaterial : public Material
+	{
+	public:
+		PBRMaterial();
+		~PBRMaterial();
+
+		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
+		inline std::shared_ptr<PBRTextures> GetPBRTextures() { return m_PBR; }
+
+	private:
+		std::shared_ptr<PBRTextures> m_PBR;
 	};
 
 	class PhongMaterial : public Material
@@ -23,12 +50,12 @@ namespace Titan {
 		PhongMaterial();
 		~PhongMaterial();
 
-		void BindPhongParam(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess);
+		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
+		inline std::shared_ptr<PhongElements>& GetPhong() { return m_Phong; }
+		inline std::shared_ptr<Texture2D>& GetTexture() { return m_Texture; }
 
-		glm::vec3 Ambient = glm::vec3(0.9f, 0.5f, 0.3f);
-		glm::vec3 Diffuse =	glm::vec3(0.9f, 0.5f, 0.3f);
-		glm::vec3 Specular = glm::vec3(0.05f, 0.05f, 0.05f);
-		float Shininess = 100.0f;
-		Titan::Ref<Texture2D> PhongTexture;
+	private:
+		std::shared_ptr<PhongElements> m_Phong;
+		std::shared_ptr<Texture2D> m_Texture;
 	};
 }

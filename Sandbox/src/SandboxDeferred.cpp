@@ -4,6 +4,7 @@
 #include "Scene/SceneDeferred.h"
 #include "Renderer/Material.h"
 #include "Renderer/PerspectiveCamera.h"
+#include "Renderer/Material.h"
 #include "imgui/imgui.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,21 +16,38 @@ SandboxDeferred::SandboxDeferred()
 
 void SandboxDeferred::OnAttach()
 {
+	//PBR Material
+	//std::shared_ptr<Titan::PBRMaterial> pbrMaterial = std::make_shared<Titan::PBRMaterial>();
+	//pbrMaterial->GetPBRTextures()->Albedo = Titan::Texture2D::Create("assets/textures/Marble006_2K_Albedo.jpg");
+	//pbrMaterial->GetPBRTextures()->Normal = Titan::Texture2D::Create("assets/textures/Marble006_2K_Normal.jpg");
+	//pbrMaterial->GetPBRTextures()->Metallic = Titan::Texture2D::Create("assets/textures/Marble006_2K_Metallic.jpg");
+	//pbrMaterial->GetPBRTextures()->Roughness = Titan::Texture2D::Create("assets/textures/Marble006_2K_Roughness.jpg");
+
+	//Phong Material
+	std::shared_ptr<Titan::PhongMaterial> PhongMaterial1 = std::make_shared<Titan::PhongMaterial>();
+	PhongMaterial1->GetPhong()->Diffuse = glm::vec3(0.7);
+
+	std::shared_ptr<Titan::PhongMaterial> PhongMaterial2 = std::make_shared<Titan::PhongMaterial>();
+	PhongMaterial2->GetPhong()->Ambient = glm::vec3(0.001);
+	PhongMaterial2->GetPhong()->Diffuse = glm::vec3(3.0);
+	//PhongMaterial2->GetTexture() = Titan::Texture2D::Create("assets/textures/Brick.png");
+
+	std::shared_ptr<Titan::PhongMaterial> PhongMaterial3 = std::make_shared<Titan::PhongMaterial>();
+	PhongMaterial3->GetPhong()->Ambient = glm::vec3(1.0, 1.0, 1.0);
+
 	//Test Basic Mesh System
-	m_DrawMesh = static_cast<Titan::Mesh*>(new Titan::Cube());
+	m_DrawMesh = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
 	m_DrawMesh->Init();
+	m_DrawMesh->SetMeshMaterial(PhongMaterial1);
+	//m_DrawMesh->SetMeshMaterial(pbrMaterial);
 
-	m_DrawMesh2 = static_cast<Titan::Mesh*>(new Titan::Plane(100.0f, 100.0f, 100, 100));
+	m_DrawMesh2 = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Plane>(Titan::Plane(100.0f, 100.0f, 100, 100)));
 	m_DrawMesh2->Init();
+	m_DrawMesh2->SetMeshMaterial(PhongMaterial2);
 
-	m_DrawMesh3 = static_cast<Titan::Mesh*>(new Titan::Sphere());
+	m_DrawMesh3 = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>(Titan::Sphere()));
 	m_DrawMesh3->Init();
-
-	//Test Basic Object Rendering
-	m_Texture = Titan::Texture2D::Create("assets/textures/Brick.png");
-	m_SimpleQuad = Titan::Texture2D::Create(1, 1);
-	uint32_t whiteTextureData = 0xffffffff;
-	m_SimpleQuad->SetData(&whiteTextureData, sizeof(uint32_t));
+	m_DrawMesh3->SetMeshMaterial(PhongMaterial3);
 
 	//Setting Deferred Shading
 	//---------------------------------------------------------------------------------
@@ -50,30 +68,22 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 
 	auto renderScene = [&](const std::shared_ptr<Titan::Shader>& shader, bool shadowPass){
 		Titan::Renderer::BeginScene(m_CameraController.GetCamera());
-		shader->Bind();
-		if (!shadowPass) {
-			m_Texture->Bind();
-			shader->SetInt("u_Texture", 0);
-			shader->SetFloat4("u_Color", glm::vec4(1.0f));
-		}
 		for (int i = 1; i <= 5; ++i) {
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 1.0f, 0.0f));
-			Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
+			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
+			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
 			transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 3.0f, 0.0f));
-			Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
+			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
+			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
 			transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 5.0f, 0.0f));
-			Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
-		}
-		if (!shadowPass) {
-			m_SimpleQuad->Bind();
-			shader->SetInt("u_Texture", 0);
-			shader->SetFloat4("u_Color", glm::vec4(0.3,0.3,0.3,1.0));
+			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
+			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
 		}
 		glm::mat4 transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -0.0f, 0.0f));
-		Titan::Renderer::Submit(shader, m_DrawMesh2->GetMeshVertexArray(), m_Light, transform2);
-		if (!shadowPass) shader->SetFloat4("u_Color", glm::vec4(1.0));
-		glm::mat4 transform3 = glm::translate(glm::mat4(1.0f), m_Light.Position) * glm::scale(glm::mat4(1.0f), { 0.1, 0.1, 0.1f });
-		Titan::Renderer::Submit(shader, m_DrawMesh3->GetMeshVertexArray(), m_Light, transform3);
+		Titan::Renderer::Submit(shader, m_DrawMesh2, m_Light, transform2);
+		
+		//glm::mat4 transform3 = glm::translate(glm::mat4(1.0f), m_Light.Position) * glm::scale(glm::mat4(1.0f), { 0.1, 0.1, 0.1f });
+		//Titan::Renderer::Submit(shader, m_DrawMesh3, m_Light, transform3);
 		shader->Unbind();
 		Titan::Renderer::EndScene();
 	};
@@ -88,8 +98,12 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	renderScene(Titan::SceneDeferred::GetShadowMapShader(), true);
 	Titan::SceneDeferred::EndShadowPass();
 
+	//MSM Pass
+	//Titan::SceneDeferred::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
+
 	//Directional Light Pass
 	Titan::SceneDeferred::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
+	//renderScene(Titan::SceneDeferred::GetPBRShader(), false);
 
 	//Point Light Pass
 	//Titan::SceneDeferred::PointLightPass(m_CameraController.GetCamera());
@@ -97,6 +111,10 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 
 void SandboxDeferred::OnImGuiRender()
 {
+	ImGui::Begin("Debug", 0, ImGuiWindowFlags_NoCollapse);
+	ImGui::Text("Camera Position x: %f y: %f z: %f", m_CameraController.GetCamera().GetPosition().x, m_CameraController.GetCamera().GetPosition().y, m_CameraController.GetCamera().GetPosition().z);
+	//ImGui::Text("LightPosition x: %f y: %f z: %f", m_CameraController.GetCamera().GetPosition().x, m_CameraController.GetCamera().GetPosition().y, m_CameraController.GetCamera().GetPosition().z);
+	ImGui::End();
 	auto& window = Titan::Application::Get().GetWindow();
 	unsigned int x, y;
 	window.GetDesktopResolution(x, y);
@@ -108,6 +126,7 @@ void SandboxDeferred::OnImGuiRender()
 		ImGui::Image((void*)Titan::SceneDeferred::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();
 	}
+		
 	ImGui::End();
 }
 

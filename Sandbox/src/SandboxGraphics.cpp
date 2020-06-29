@@ -84,7 +84,7 @@ void SandboxGraphics::OnUpdate(Titan::Timestep ts)
 	//SceneNode Test
 	//m_Scene->Update(ts);
 	//m_Scene->PreRender();
-	//m_PhongMaterial->BindPhongParam(m_Ambient, m_Diffuse, m_Specular, m_Shininess);
+	//m_PhongMaterial->Bind();
 	//m_Scene->Render();
 	//m_Scene->PostRender();
 

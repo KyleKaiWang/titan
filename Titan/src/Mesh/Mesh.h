@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "Renderer/VertexArray.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/Material.h"
 
 struct aiMesh;
 
@@ -14,7 +15,6 @@ namespace Titan {
 	public:
 
 		Mesh();
-		Mesh(const aiMesh* mesh);
 		Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uv, std::vector<glm::vec3> normals, std::vector<glm::vec3> tangents, std::vector<glm::vec3> bitangents, std::vector<unsigned int> indices);
 		virtual ~Mesh();
 
@@ -28,14 +28,24 @@ namespace Titan {
 
 		std::vector<uint32_t> m_Indices;
 		inline const std::shared_ptr<VertexArray>& GetMeshVertexArray() { return m_VertexArray; }
+		inline std::shared_ptr<Material>& GetMeshMaterial() { return m_Material; }
 
-		static std::shared_ptr<Mesh> Create(const std::string& filename);
-		static std::shared_ptr<Mesh> CreateByData(const std::string& data);
+		inline const void SetMeshMaterial(std::shared_ptr<Material> material) { m_Material = material; }
 
 	protected:
 		std::shared_ptr<VertexArray> m_VertexArray;
 		std::shared_ptr<VertexBuffer> m_VertexBuffer;
 		std::shared_ptr<IndexBuffer> m_IndexBuffer;
+		std::shared_ptr<Material> m_Material;
+	};
+
+	class TriangleMesh : public Mesh
+	{
+	public:
+		TriangleMesh(const aiMesh* mesh);
+
+		static std::shared_ptr<TriangleMesh> Create(const std::string& filename);
+		static std::shared_ptr<TriangleMesh> CreateByData(const std::string& data);
 	};
 
 	class Cube : public Mesh

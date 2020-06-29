@@ -118,7 +118,8 @@ namespace Titan {
 
 	void SceneNode::Render(Scene* scene)
 	{
-		Renderer::Submit(m_Material->GetShader(), m_Mesh->GetMeshVertexArray(), m_Transform);
+		//TODO: Fix shader submitting
+		//Renderer::Submit(m_Material->GetShader(), m_Mesh->GetMeshVertexArray(), m_Transform);
 	}
 
 	void SceneNode::RenderChildren(Scene* scene)

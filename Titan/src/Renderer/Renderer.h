@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Lighting.h"
+#include "Mesh/Mesh.h"
 
 namespace Titan {
 
@@ -21,6 +22,7 @@ namespace Titan {
 
 		static void Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
 		static void Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, Light& light, const glm::mat4& transform = glm::mat4(1.0f));
+		static void Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Mesh>& mesh, Light& light, const glm::mat4& transform);
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 	private:
