@@ -25,6 +25,7 @@ private:
 	Titan::Mesh* m_DrawSkybox;
 
 	std::shared_ptr<Titan::Scene> m_Scene;
+	std::vector<Titan::PointLight> m_PointLights;
 
 	//Titan::ParticleSystem m_ParticleSystem;
 	//Titan::Particle m_Particle;

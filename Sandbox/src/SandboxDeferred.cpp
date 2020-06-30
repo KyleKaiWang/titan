@@ -1,13 +1,16 @@
 #include "SandboxDeferred.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Scene/Scene.h"
-#include "Scene/SceneDeferred.h"
+#include "Scene/DeferredRendering.h"
 #include "Renderer/Material.h"
 #include "Renderer/PerspectiveCamera.h"
 #include "Renderer/Material.h"
 #include "imgui/imgui.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+const int NUM_LIGHTS = 15;
+const int NUM_MESHS = 10;
 
 SandboxDeferred::SandboxDeferred()
 	: Layer("SandboxDeferred"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 100.0f)
@@ -16,6 +19,22 @@ SandboxDeferred::SandboxDeferred()
 
 void SandboxDeferred::OnAttach()
 {
+	//Point Lights
+	for (int i = 1; i <= NUM_LIGHTS; i+=4) {
+		for (int j = 1; j <= NUM_LIGHTS; j+=2) {
+			Titan::PointLight pLight;
+			float xPos = j * 2.0f;
+			float yPos = i * 2.0f;
+			float zPos = 2.0f;
+			pLight.Position = glm::vec3(xPos, yPos, zPos);
+
+			glm::vec3 colorArr[] = { glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec3(0.0f, 0.0f, 1.0f) };
+			pLight.Diffuse = colorArr[rand() % 3];
+
+			m_PointLights.push_back(pLight);
+		}
+	}
+
 	//PBR Material
 	//std::shared_ptr<Titan::PBRMaterial> pbrMaterial = std::make_shared<Titan::PBRMaterial>();
 	//pbrMaterial->GetPBRTextures()->Albedo = Titan::Texture2D::Create("assets/textures/Marble006_2K_Albedo.jpg");
@@ -25,7 +44,7 @@ void SandboxDeferred::OnAttach()
 
 	//Phong Material
 	std::shared_ptr<Titan::PhongMaterial> PhongMaterial1 = std::make_shared<Titan::PhongMaterial>();
-	PhongMaterial1->GetPhong()->Diffuse = glm::vec3(0.7);
+	PhongMaterial1->GetPhong()->Diffuse = glm::vec3(0.3);
 
 	std::shared_ptr<Titan::PhongMaterial> PhongMaterial2 = std::make_shared<Titan::PhongMaterial>();
 	PhongMaterial2->GetPhong()->Ambient = glm::vec3(0.001);
@@ -36,7 +55,7 @@ void SandboxDeferred::OnAttach()
 	PhongMaterial3->GetPhong()->Ambient = glm::vec3(1.0, 1.0, 1.0);
 
 	//Test Basic Mesh System
-	m_DrawMesh = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
+	m_DrawMesh = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Cube>());
 	m_DrawMesh->Init();
 	m_DrawMesh->SetMeshMaterial(PhongMaterial1);
 	//m_DrawMesh->SetMeshMaterial(pbrMaterial);
@@ -51,7 +70,7 @@ void SandboxDeferred::OnAttach()
 
 	//Setting Deferred Shading
 	//---------------------------------------------------------------------------------
-	Titan::SceneDeferred::Init();
+	Titan::DeferredRendering::Init();
 }
 
 void SandboxDeferred::OnDetach()
@@ -65,22 +84,16 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 
 	//Titan::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	//Titan::RenderCommand::Clear();
-
 	auto renderScene = [&](const std::shared_ptr<Titan::Shader>& shader, bool shadowPass){
 		Titan::Renderer::BeginScene(m_CameraController.GetCamera());
-		for (int i = 1; i <= 5; ++i) {
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 1.0f, 0.0f));
-			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
-			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
-			transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 3.0f, 0.0f));
-			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
-			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
-			transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * i, 5.0f, 0.0f));
-			//Titan::Renderer::Submit(shader, m_DrawMesh->GetMeshVertexArray(), m_Light, transform);
-			Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
+		for (int i = 1; i <= NUM_MESHS; i+=2) {
+			for (int j = 1; j <= NUM_MESHS; ++j) {
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * j, 1.0f * i, 0.0f));
+				Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
+			}
 		}
-		glm::mat4 transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -0.0f, 0.0f));
-		Titan::Renderer::Submit(shader, m_DrawMesh2, m_Light, transform2);
+		//glm::mat4 transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -0.0f, 0.0f));
+		//Titan::Renderer::Submit(shader, m_DrawMesh2, m_Light, transform2);
 		
 		//glm::mat4 transform3 = glm::translate(glm::mat4(1.0f), m_Light.Position) * glm::scale(glm::mat4(1.0f), { 0.1, 0.1, 0.1f });
 		//Titan::Renderer::Submit(shader, m_DrawMesh3, m_Light, transform3);
@@ -89,31 +102,30 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	};
 
 	//Geometry Pass
-	Titan::SceneDeferred::BeginGeometryPass();
-	renderScene(Titan::SceneDeferred::GetGeometryShader(), false);
-	Titan::SceneDeferred::EndGeometryPass();
+	Titan::DeferredRendering::BeginGeometryPass();
+	renderScene(Titan::DeferredRendering::GetGeometryShader(), false);
+	Titan::DeferredRendering::EndGeometryPass();
 
 	//Shadow Map Pass
-	Titan::SceneDeferred::BeginShadowPass();
-	renderScene(Titan::SceneDeferred::GetShadowMapShader(), true);
-	Titan::SceneDeferred::EndShadowPass();
+	Titan::DeferredRendering::BeginShadowPass();
+	renderScene(Titan::DeferredRendering::GetShadowMapShader(), true);
+	Titan::DeferredRendering::EndShadowPass();
 
 	//MSM Pass
-	//Titan::SceneDeferred::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
+	//Titan::DeferredRendering::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
 
 	//Directional Light Pass
-	Titan::SceneDeferred::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
-	//renderScene(Titan::SceneDeferred::GetPBRShader(), false);
+	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
+	//renderScene(Titan::DeferredRendering::GetPBRShader(), false);
 
 	//Point Light Pass
-	//Titan::SceneDeferred::PointLightPass(m_CameraController.GetCamera());
+	Titan::DeferredRendering::PointLightPass(m_CameraController.GetCamera(), m_PointLights);
 }
 
 void SandboxDeferred::OnImGuiRender()
 {
 	ImGui::Begin("Debug", 0, ImGuiWindowFlags_NoCollapse);
 	ImGui::Text("Camera Position x: %f y: %f z: %f", m_CameraController.GetCamera().GetPosition().x, m_CameraController.GetCamera().GetPosition().y, m_CameraController.GetCamera().GetPosition().z);
-	//ImGui::Text("LightPosition x: %f y: %f z: %f", m_CameraController.GetCamera().GetPosition().x, m_CameraController.GetCamera().GetPosition().y, m_CameraController.GetCamera().GetPosition().z);
 	ImGui::End();
 	auto& window = Titan::Application::Get().GetWindow();
 	unsigned int x, y;
@@ -121,9 +133,9 @@ void SandboxDeferred::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(x, y));
 	ImGui::Begin("GBuffer", 0, ImGuiWindowFlags_NoCollapse);
-	ImGui::Image((void*)Titan::SceneDeferred::GetShadowMapTexture()->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
-	for(int i = 0; i < Titan::SceneDeferred::GBufferTextures.size(); ++i) {
-		ImGui::Image((void*)Titan::SceneDeferred::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
+	ImGui::Image((void*)Titan::DeferredRendering::GetShadowMapTexture()->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
+	for(int i = 0; i < Titan::DeferredRendering::GBufferTextures.size(); ++i) {
+		ImGui::Image((void*)Titan::DeferredRendering::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();
 	}
 		

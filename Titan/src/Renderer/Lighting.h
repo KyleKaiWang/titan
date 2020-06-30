@@ -37,4 +37,13 @@ namespace Titan {
 			shader->SetFloat("u_LightOuterCutOff", OuterCutOff);
 		}
 	};
+
+	class PointLight : public Light
+	{
+	public:
+		float constant = 1.0f;
+		float Linear = 1.0f;
+		float Quadratic = 0.7f;
+		float Radius = 1.8f;
+	};
 }

@@ -5,7 +5,7 @@
 
 namespace Titan {
 
-	class SceneDeferred
+	class DeferredRendering
 	{
 	public:
 		static void Init();
@@ -15,7 +15,7 @@ namespace Titan {
 		static void BeginShadowPass();
 		static void EndShadowPass();
 		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
-		static void PointLightPass(PerspectiveCamera& camera);
+		static void PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights);
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
 
 		static const std::shared_ptr<Shader>& GetGeometryShader();

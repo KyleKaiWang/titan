@@ -139,13 +139,6 @@ void SandboxGraphics::OnImGuiRender()
 	ImGui::Begin("Settings");
 	ImGui::ColorEdit3("Square Color", glm::value_ptr(m_Color));
 	ImGui::End();
-
-	ImGui::SetNextWindowSize(ImVec2(1280, 720));
-	ImGui::Begin("GBuffer");
-	for (auto tex : Titan::SceneDeferred::GBufferTextures) {
-		ImGui::Image((void*)tex->GetTextureID(), ImVec2((float)tex->GetWidth(), (float)tex->GetHeight()));
-	}
-	ImGui::End();
 }
 
 void SandboxGraphics::OnEvent(Titan::Event& event)

@@ -1,5 +1,5 @@
 #include "tpch.h"
-#include "SceneDeferred.h"
+#include "DeferredRendering.h"
 #include "../Renderer/Texture.h"
 #include "../Renderer/FrameBuffer.h"
 #include "Application.h"
@@ -8,13 +8,9 @@
 
 namespace Titan {
 
-	const unsigned int NUM_LIGHTS = 5;
-	std::vector<glm::vec3> lightPositions;
-	std::vector<glm::vec3> lightColors;
+	std::vector<std::shared_ptr<Texture2D>> DeferredRendering::GBufferTextures;
 
-	std::vector<std::shared_ptr<Texture2D>> SceneDeferred::GBufferTextures;
-
-	struct SceneDeferredStorage
+	struct DeferredRenderingStorage
 	{
 		std::shared_ptr<VertexBuffer> VertexBuffer;
 		std::shared_ptr<VertexArray> VertexArray;
@@ -35,11 +31,11 @@ namespace Titan {
 		std::shared_ptr<Texture2D> g_ShadowMap;
 	};
 
-	static SceneDeferredStorage* s_DeferredData;
+	static DeferredRenderingStorage* s_DeferredData;
 
-	void SceneDeferred::Init()
+	void DeferredRendering::Init()
 	{
-		s_DeferredData = new SceneDeferredStorage();		
+		s_DeferredData = new DeferredRenderingStorage();		
 		s_DeferredData->VertexArray = VertexArray::Create();
 
 		float quadVertices[] = {
@@ -62,41 +58,14 @@ namespace Titan {
 
 		s_DeferredData->DirectionalLightShader = Shader::Create("shaders/LightPass.vs", "shaders/LightPass.fs");
 		//s_DeferredData->DirectionalLightShader = Shader::Create("shaders/MSM.vs", "shaders/MSM.fs");
-		//s_DeferredData->DirectionalLightShader->Bind();
-		//s_DeferredData->DirectionalLightShader->SetInt("g_Position", 0);
-		//s_DeferredData->DirectionalLightShader->SetInt("g_WorldNormal", 1);
-		//s_DeferredData->DirectionalLightShader->SetInt("g_Albedo", 2);
-		//s_DeferredData->DirectionalLightShader->SetInt("g_Normal", 3);
-		//s_DeferredData->DirectionalLightShader->SetInt("g_MetallicRoughness", 4);
-		//s_DeferredData->DirectionalLightShader->SetInt("g_ShadowMap", 5);
 
 		s_DeferredData->PointLightShader = Shader::Create("shaders/PointLightPass.vs", "shaders/PointLightPass.fs");
-		s_DeferredData->PointLightShader->Bind();
-		s_DeferredData->PointLightShader->SetInt("g_PositionTexture", 1);
-		s_DeferredData->PointLightShader->SetInt("g_NormalTexture", 2);
-		s_DeferredData->PointLightShader->SetInt("g_DiffuseTexture", 3);
 
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
-
-		// Local lighting info
-		// -------------
-		srand(13);
-		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
-		{
-			float xPos = i * 4.0f;
-			float yPos = 3.0f;
-			float zPos = 1.0f;
-			lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
-			
-			float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-			float gColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-			float bColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-			lightColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-		}
 	}
 
-	void SceneDeferred::SetFrameBuffer(uint32_t width, uint32_t height)
+	void DeferredRendering::SetFrameBuffer(uint32_t width, uint32_t height)
 	{
 		//GBuffers
 		{
@@ -153,7 +122,7 @@ namespace Titan {
 		}
 	}
 
-	void SceneDeferred::BeginGeometryPass()
+	void DeferredRendering::BeginGeometryPass()
 	{
 		s_DeferredData->GBufferFBO->Bind();
 		
@@ -167,12 +136,12 @@ namespace Titan {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void SceneDeferred::EndGeometryPass()
+	void DeferredRendering::EndGeometryPass()
 	{
 		s_DeferredData->GBufferFBO->Unbind();
 	}
 
-	void SceneDeferred::BeginShadowPass()
+	void DeferredRendering::BeginShadowPass()
 	{
 		s_DeferredData->ShadowMapFBO->Bind();
 		glViewport(0, 0, s_DeferredData->ShadowMapFBO->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
@@ -184,14 +153,14 @@ namespace Titan {
 		glCullFace(GL_FRONT);
 	}
 
-	void SceneDeferred::EndShadowPass()
+	void DeferredRendering::EndShadowPass()
 	{
 		s_DeferredData->ShadowMapFBO->Unbind();
 		glCullFace(GL_BACK);
 		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
-	void SceneDeferred::DirectionalLightPass(PerspectiveCamera& camera, Light& light)
+	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, Light& light)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -207,29 +176,26 @@ namespace Titan {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		s_DeferredData->VertexArray->Unbind();
 		s_DeferredData->DirectionalLightShader->Unbind();
-
-		//Read Buffer
-		//glBindFramebuffer(GL_READ_FRAMEBUFFER, s_DeferredData->RenderBuffer);
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		//glBlitNamedFramebuffer(s_DeferredData->RenderBuffer, 0, 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), 0, 0, GBufferTextures[0]->GetWidth(), GBufferTextures[0]->GetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-	void SceneDeferred::PointLightPass(PerspectiveCamera& camera)
+	void DeferredRendering::PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights)
 	{
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
 		glEnable(GL_CULL_FACE);
 
 		s_DeferredData->PointLightShader->Bind();
-		for (unsigned int i = 0; i < lightPositions.size(); ++i) {
-			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Position", lightPositions[i]);
-			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Color", lightColors[i]);
-			const float constant = 1.0;
-			const float linear = 0.7;
-			const float quadratic = 1.8;
+		s_DeferredData->PointLightShader->SetInt("u_LightNum", pointLights.size());
+		for (unsigned int i = 0; i < pointLights.size(); ++i) {
+			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Position", pointLights[i].Position);
+			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Color", pointLights[i].Diffuse);
+			const float constant = 1.0f;
+			const float linear = pointLights[i].Linear;
+			const float quadratic = pointLights[i].Quadratic;
 			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Linear", linear);
 			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Quadratic", quadratic);
-			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", 2.0);
+			const float maxBrightness = std::fmaxf(std::fmaxf(pointLights[i].Diffuse.r, pointLights[i].Diffuse.g), pointLights[i].Diffuse.b);
+			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", radius);
 		}
 		s_DeferredData->PointLightShader->SetFloat3("u_ViewPos", camera.GetPosition());
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
@@ -243,7 +209,7 @@ namespace Titan {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	void SceneDeferred::MomentShadowMapPass(PerspectiveCamera& camera, Light& light)
+	void DeferredRendering::MomentShadowMapPass(PerspectiveCamera& camera, Light& light)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -259,22 +225,22 @@ namespace Titan {
 		s_DeferredData->DirectionalLightShader->Unbind();
 	}
 
-	const std::shared_ptr<Shader>& SceneDeferred::GetGeometryShader()
+	const std::shared_ptr<Shader>& DeferredRendering::GetGeometryShader()
 	{
 		return s_DeferredData->GeometryShader;
 	}
 
-	const std::shared_ptr<Shader>& SceneDeferred::GetShadowMapShader()
+	const std::shared_ptr<Shader>& DeferredRendering::GetShadowMapShader()
 	{
 		return s_DeferredData->ShadowMapShader;
 	}
 
-	const std::shared_ptr<Shader>& SceneDeferred::GetPBRShader()
+	const std::shared_ptr<Shader>& DeferredRendering::GetPBRShader()
 	{
 		return s_DeferredData->DirectionalLightShader;
 	}
 
-	const std::shared_ptr<Texture2D>& SceneDeferred::GetShadowMapTexture()
+	const std::shared_ptr<Texture2D>& DeferredRendering::GetShadowMapTexture()
 	{
 		return s_DeferredData->g_ShadowMap;
 	}

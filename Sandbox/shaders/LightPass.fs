@@ -108,7 +108,8 @@ vec3 CalcDirLight(vec3 gPos, vec3 gNormal, vec3 gAmbient, vec3 gDiffuse, vec3 gS
 	float shadow = 0;
 	shadow = ShadowCalculationPCF(fragPosLightSpace, gPos); 
 	//shadow = ShadowCalculation(fragPosLightSpace, gNormal, lightDir);
-    return (ambient + (1.0 - shadow) * (diffuse + specular));
+    //return (ambient + (1.0 - shadow) * (diffuse + specular));
+	return ambient + diffuse + specular;
 }
 
 void main()

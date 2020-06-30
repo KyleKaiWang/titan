@@ -21,7 +21,7 @@
 #include "Renderer/Renderer2D.h"
 #include "Renderer/RenderCommand.h"
 #include "Scene/Scene.h"
-#include "Scene/SceneDeferred.h"
+#include "Scene/DeferredRendering.h"
 #include "Renderer/Lighting.h"
 
 #include "Renderer/Buffer.h"
