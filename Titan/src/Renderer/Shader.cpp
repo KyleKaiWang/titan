@@ -20,4 +20,16 @@ namespace Titan {
 		return nullptr;
 	}
 
+	Ref<Shader> Shader::Create(const std::string& computeShaderPath)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: TITAN_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(computeShaderPath);
+		}
+
+		TITAN_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
+
 }

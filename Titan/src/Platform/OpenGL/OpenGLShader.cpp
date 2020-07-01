@@ -92,6 +92,63 @@ namespace Titan {
 		glDetachShader(program, fragmentShader);
 	}
 
+	OpenGLShader::OpenGLShader(const std::string& computeShaderPath)
+	{
+		GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
+
+		const std::string computeShaderString = GetShaderString(computeShaderPath);
+		const GLchar* source = computeShaderString.c_str();
+		glShaderSource(computeShader, 1, &source, 0);
+
+		glCompileShader(computeShader);
+
+		GLint isCompiled = 0;
+		glGetShaderiv(computeShader, GL_COMPILE_STATUS, &isCompiled);
+		if (isCompiled == GL_FALSE)
+		{
+			GLint maxLength = 0;
+			glGetShaderiv(computeShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+			std::vector<GLchar> infoLog(maxLength);
+			glGetShaderInfoLog(computeShader, maxLength, &maxLength, &infoLog[0]);
+
+			glDeleteShader(computeShader);
+
+			TITAN_CORE_ERROR("{0}", infoLog.data());
+			TITAN_CORE_ASSERT(false, "Compute shader compilation failure");
+
+			return;
+		}
+
+		m_RendererID = glCreateProgram();
+		GLuint program = m_RendererID;
+
+		glAttachShader(program, computeShader);
+
+		glLinkProgram(program);
+
+		GLint isLinked = 0;
+		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		if (isLinked == GL_FALSE)
+		{
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+			glDeleteProgram(program);
+			glDeleteShader(computeShader);
+
+			TITAN_CORE_ERROR("{0}", infoLog.data());
+			TITAN_CORE_ASSERT(false, "Shader link failure");
+
+			return;
+		}
+
+		glDetachShader(program, computeShader);
+	}
+
 	OpenGLShader::~OpenGLShader()
 	{
 		glDeleteProgram(m_RendererID);

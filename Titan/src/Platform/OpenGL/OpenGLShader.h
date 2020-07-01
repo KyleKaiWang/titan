@@ -9,6 +9,7 @@ namespace Titan {
 	{
 	public:
 		OpenGLShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+		OpenGLShader(const std::string& computeShaderPath);
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;
