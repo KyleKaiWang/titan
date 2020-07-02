@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "Renderer/OrthographicCamera.h"
+#include "Renderer/Camera.h"
 #include "Renderer/Shader.h"
 #include "Renderer/VertexArray.h"
 

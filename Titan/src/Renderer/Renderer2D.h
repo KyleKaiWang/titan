@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OrthographicCamera.h"
+#include "Camera.h"
 #include "VertexArray.h"
 #include "Texture.h"
 

@@ -2,7 +2,7 @@
 
 #include "RenderCommand.h"
 
-#include "PerspectiveCamera.h"
+#include "Camera.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Lighting.h"

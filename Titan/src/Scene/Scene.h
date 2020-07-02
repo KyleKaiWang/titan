@@ -1,7 +1,7 @@
 #pragma once
 #include "Renderer/Material.h"
 #include "Mesh/Mesh.h"
-#include "Renderer/PerspectiveCamera.h"
+#include "Renderer/Camera.h"
 #include "Renderer/CameraController.h"
 
 namespace Titan {
