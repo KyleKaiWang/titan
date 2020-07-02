@@ -30,9 +30,8 @@
 #include "Renderer/VertexArray.h"
 #include "Renderer/FrameBuffer.h"
 
-#include "Renderer/OrthographicCamera.h"
+#include "Renderer/Camera.h"
 #include "Renderer/OrthographicCameraController.h"
-#include "Renderer/PerspectiveCamera.h"
 #include "Renderer/CameraController.h"
 
 #include "Renderer/Sprite.h"

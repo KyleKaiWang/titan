@@ -2,7 +2,7 @@
 #include "Core/Timestep.h"
 #include "Events/ApplicationEvent.h"
 #include "Events/MouseEvent.h"
-#include "Renderer/PerspectiveCamera.h"
+#include "Renderer/Camera.h"
 
 namespace Titan {
 	

@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/OrthographicCamera.h"
+#include "Renderer/Camera.h"
 #include "Core/Timestep.h"
 #include "Events/ApplicationEvent.h"
 #include "Events/MouseEvent.h"
