@@ -16,9 +16,10 @@ public:
 private:
 	Titan::CameraController m_CameraController;
 	Titan::Light m_Light;
-	std::shared_ptr<Titan::Mesh> m_DrawMesh;
-	std::shared_ptr<Titan::Mesh> m_DrawMesh2;
-	std::shared_ptr<Titan::Mesh> m_DrawMesh3;
+	std::shared_ptr<Titan::Mesh> m_DrawLight;
+	std::shared_ptr<Titan::Mesh> m_DrawSphere;
+	std::shared_ptr<Titan::Mesh> m_DrawCube;
+	std::shared_ptr<Titan::Mesh> m_DrawPlane;
 
 	Titan::Ref<Titan::TextureCube> m_TextureCube;
 	Titan::Ref<Titan::Shader> m_SkyboxShader;
@@ -26,7 +27,4 @@ private:
 
 	std::shared_ptr<Titan::Scene> m_Scene;
 	std::vector<Titan::PointLight> m_PointLights;
-
-	//Titan::ParticleSystem m_ParticleSystem;
-	//Titan::Particle m_Particle;
 };

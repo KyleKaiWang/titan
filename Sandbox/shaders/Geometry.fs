@@ -22,8 +22,8 @@ void main()
 	g_Position = vec4(v_Position, 1.0f);
 	g_WorldNormal = vec4(v_Normal, 1.0f);
 	
-	g_Ambient = vec4(u_Ambient, 1.0f);
-    g_Diffuse = vec4(u_Diffuse, 1.0f) * texture(u_Texture, v_TexCoord);
+	g_Ambient = vec4(u_Ambient, 1.0f) * texture(u_Texture, v_TexCoord);
+    g_Diffuse = vec4(u_Diffuse, 1.0f) * texture(u_Texture, v_TexCoord); 
     g_Specular = vec4(u_Specular, 1.0f);
 	//g_Specular.a = u_Shininess;
 }

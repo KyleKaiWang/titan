@@ -7,6 +7,7 @@ namespace Titan {
 
 	struct FramebufferDesc
 	{
+		std::string Name;
 		uint32_t Width, Height;
 		uint32_t nrColorAttachment = 1;
 		TextureDesc TexDesc;

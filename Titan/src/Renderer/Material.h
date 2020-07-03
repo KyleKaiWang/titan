@@ -16,9 +16,9 @@ namespace Titan {
 
 	struct PhongElements
 	{
-		glm::vec3 Ambient = glm::vec3(0.9f, 0.5f, 0.3f);
-		glm::vec3 Diffuse = glm::vec3(0.9f, 0.5f, 0.3f);
-		glm::vec3 Specular = glm::vec3(0.05f, 0.05f, 0.05f);
+		glm::vec3 Ambient = glm::vec3(0.2);
+		glm::vec3 Diffuse = glm::vec3(0.3);
+		glm::vec3 Specular = glm::vec3(0.05f);
 		float Shininess = 16.0;
 	};
 

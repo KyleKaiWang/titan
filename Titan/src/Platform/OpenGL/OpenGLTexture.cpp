@@ -79,6 +79,9 @@ namespace Titan {
 		
 		for (auto pair : texDesc.Parameters)
 			glTextureParameteri(m_RendererID, pair.first, pair.second);
+
+		//float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		//glTextureParameterfv(m_RendererID, GL_TEXTURE_BORDER_COLOR, borderColor);
 	}
 	
 	OpenGLTexture2D::~OpenGLTexture2D()

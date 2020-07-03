@@ -184,6 +184,11 @@ namespace Titan {
 		UploadUniformMat4(name, matrix);
 	}
 
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
+	{
+		UploadUniformFloat2(name, value);
+	}
+
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		UploadUniformFloat3(name, value);
@@ -192,6 +197,11 @@ namespace Titan {
 	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
 		UploadUniformFloat4(name, value);
+	}
+
+	void OpenGLShader::SetBlock(const std::string& name, uint32_t value)
+	{
+		UploadUniformBlock(name, value);
 	}
 
 	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
@@ -234,6 +244,12 @@ namespace Titan {
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+
+	void OpenGLShader::UploadUniformBlock(const std::string& name, uint32_t bindpoint)
+	{
+		GLint location = glGetUniformBlockIndex(m_RendererID, name.c_str());
+		glUniformBlockBinding(m_RendererID, location, bindpoint);
 	}
 
 	std::string OpenGLShader::GetShaderString(const std::string& shaderSourcePath)

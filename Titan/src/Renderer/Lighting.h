@@ -6,19 +6,27 @@ namespace Titan {
 
 	struct Light
 	{
-		glm::vec3 Position              = glm::vec3(5, 5, 5);
-		glm::vec3 Direction             = glm::vec3(-1, -0.1, -1);
+		glm::vec3 Position              = glm::vec3(5);
+		glm::vec3 Direction             = glm::vec3(-1, -1, -1);
 		glm::vec3 Ambient				= glm::vec3(0.3f);
 		glm::vec3 Diffuse				= glm::vec3(0.8f);
 		glm::vec3 Specular				= glm::vec3(0.2f);
 
-		//Orthographic 
-		glm::mat4 ProjectionMatrix      = glm::ortho(50.0f, -50.0f, 50.0f, -50.0f, 30.0f, -30.0f);
-		glm::mat4 ViewMatrix            = glm::lookAt(Direction, Position + Direction, glm::vec3(0.0, 1.0, 0.0));
+		//Orthographic
+		float orthoLeft					= -10.0f * 1.2f;
+		float orthoRight				=  10.0f * 1.2f;
+		float orthoButtom				= -10.0f;
+		float orthoTop					=  10.0f;
+		float orthoNear					= -40.0f;
+		float orthoFar					=  20.0f;
+
+		glm::mat4 ProjectionMatrix      = glm::ortho(orthoLeft, orthoRight, orthoButtom, orthoTop, orthoNear, orthoFar);
+		glm::mat4 ViewMatrix            = glm::lookAt(Position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 
 		//Perspective
-		//glm::mat4 ProjectionMatrix      = glm::perspective(glm::radians(60.f), (float)1280 / (float)720, 0.0f, 100.0f);
-		//glm::mat4 ViewMatrix			  = glm::lookAt(Direction, Position + Direction, glm::vec3(0.0, 1.0, 0.0));
+		//glm::mat4 ProjectionMatrix      = glm::perspective(glm::radians(60.f), (float)1280 / (float)720, 0.5f, 100.0f);
+		//glm::mat4 ViewMatrix			= glm::lookAt(Position, Position + Direction, glm::vec3(0.0, 1.0, 0.0));
+
 		glm::mat4 SpaceMatrix           = ProjectionMatrix * ViewMatrix;
 		glm::vec3 Attenuation           = glm::vec3(1.0f);
 		glm::vec3 Intensity             = glm::vec3(1.0f); 
@@ -35,6 +43,13 @@ namespace Titan {
 			shader->SetFloat3("u_LightAttenuation", Attenuation);
 			shader->SetFloat("u_LightCutOff", CutOff);
 			shader->SetFloat("u_LightOuterCutOff", OuterCutOff);
+		}
+
+		void UpdateViewProjection()
+		{
+			ProjectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoButtom, orthoTop, orthoNear, orthoFar);
+			ViewMatrix = glm::lookAt(Position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+			SpaceMatrix = ProjectionMatrix * ViewMatrix;
 		}
 	};
 

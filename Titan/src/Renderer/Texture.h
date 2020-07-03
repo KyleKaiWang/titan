@@ -5,6 +5,7 @@
 
 namespace Titan {
 	
+	
 	struct TextureDesc
 	{
 		uint32_t Width;

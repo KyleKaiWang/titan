@@ -17,11 +17,13 @@ namespace Titan {
 
 		std::shared_ptr<Shader> GeometryShader;
 		std::shared_ptr<Shader> ShadowMapShader;
+		std::shared_ptr<Shader> BlurShadowMapShader;
 		std::shared_ptr<Shader> DirectionalLightShader;
 		std::shared_ptr<Shader> PointLightShader;
 
 		std::shared_ptr<Framebuffer> GBufferFBO;
 		std::shared_ptr<Framebuffer> ShadowMapFBO;
+		std::vector<std::shared_ptr<Framebuffer>> BlurShadowMapFBOs;
 
 		std::shared_ptr<Texture2D> g_Posistion;
 		std::shared_ptr<Texture2D> g_WorldNormal;
@@ -29,6 +31,7 @@ namespace Titan {
 		std::shared_ptr<Texture2D> g_Normal;
 		std::shared_ptr<Texture2D> g_MetallicRoughness;
 		std::shared_ptr<Texture2D> g_ShadowMap;
+		std::vector<std::shared_ptr<Texture2D>> g_BlurShadowMaps;
 	};
 
 	static DeferredRenderingStorage* s_DeferredData;
@@ -53,11 +56,9 @@ namespace Titan {
 		s_DeferredData->VertexArray->AddVertexBuffer(s_DeferredData->VertexBuffer);
 		s_DeferredData->VertexArray->Unbind();
 		s_DeferredData->GeometryShader = Shader::Create("shaders/Geometry.vs", "shaders/Geometry.fs");
-		s_DeferredData->ShadowMapShader = Shader::Create("shaders/ShadowMapPass.vs", "shaders/ShadowMapPass.fs");
-		//s_DeferredData->ShadowMapShader = Shader::Create("shaders/ShadowMapPass_MSM.vs", "shaders/ShadowMapPass_MSM.fs");
-
-		s_DeferredData->DirectionalLightShader = Shader::Create("shaders/LightPass.vs", "shaders/LightPass.fs");
-		//s_DeferredData->DirectionalLightShader = Shader::Create("shaders/MSM.vs", "shaders/MSM.fs");
+		s_DeferredData->ShadowMapShader = Shader::Create("shaders/ShadowMapPass_MSM.vs", "shaders/ShadowMapPass_MSM.fs");
+		s_DeferredData->BlurShadowMapShader = Shader::Create("shaders/GaussianBlur.vs", "shaders/GaussianBlur.fs");
+		s_DeferredData->DirectionalLightShader = Shader::Create("shaders/MSM.vs", "shaders/MSM.fs");
 
 		s_DeferredData->PointLightShader = Shader::Create("shaders/PointLightPass.vs", "shaders/PointLightPass.fs");
 
@@ -102,23 +103,52 @@ namespace Titan {
 		//Shadow Map
 		{
 			TextureDesc texDesc;
-			texDesc.Width = width;
-			texDesc.Height = height;
+			texDesc.Width = 1024;
+			texDesc.Height = 1024;
 			texDesc.Format = GL_RGBA32F;
 			texDesc.MipLevels = 0;
-			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
 			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
 			
 			FramebufferDesc desc;
-			desc.Width = width;
-			desc.Height = height;
-			desc.nrColorAttachment = 0;
+			desc.Width = 1024;
+			desc.Height = 1024;
+			desc.nrColorAttachment = 1;
 			desc.TexDesc = texDesc;
 			s_DeferredData->ShadowMapFBO = Framebuffer::Create(desc);
-			s_DeferredData->g_ShadowMap = s_DeferredData->ShadowMapFBO->GetDepthAttachment();
+			s_DeferredData->g_ShadowMap = s_DeferredData->ShadowMapFBO->GetColorAttachment(0);
 			GBufferTextures.push_back(s_DeferredData->g_ShadowMap);
+		}
+
+		//Blur Shadow Map
+		{
+			TextureDesc texDesc;
+			texDesc.Width = 1024;
+			texDesc.Height = 1024;
+			texDesc.Format = GL_RGBA32F;
+			texDesc.MipLevels = 0;
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+			
+			FramebufferDesc desc;
+			desc.Width = 1024;
+			desc.Height = 1024;
+			desc.nrColorAttachment = 1;
+			desc.TexDesc = texDesc;
+
+			//Horizen Blur
+			s_DeferredData->BlurShadowMapFBOs.push_back(Framebuffer::Create(desc));
+			s_DeferredData->g_BlurShadowMaps.push_back(s_DeferredData->BlurShadowMapFBOs[0]->GetColorAttachment(0));
+			GBufferTextures.push_back(s_DeferredData->g_BlurShadowMaps[0]);
+			
+			//Vertical Blur
+			s_DeferredData->BlurShadowMapFBOs.push_back(Framebuffer::Create(desc));
+			s_DeferredData->g_BlurShadowMaps.push_back(s_DeferredData->BlurShadowMapFBOs[1]->GetColorAttachment(0));
+			GBufferTextures.push_back(s_DeferredData->g_BlurShadowMaps[1]);
 		}
 	}
 
@@ -145,18 +175,61 @@ namespace Titan {
 	{
 		s_DeferredData->ShadowMapFBO->Bind();
 		glViewport(0, 0, s_DeferredData->ShadowMapFBO->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
-		//glNamedFramebufferDrawBuffer(s_DeferredData->ShadowMapFBO->GetFramebufferID(), GL_COLOR_ATTACHMENT0);
+		glNamedFramebufferDrawBuffer(s_DeferredData->ShadowMapFBO->GetFramebufferID(), GL_COLOR_ATTACHMENT0);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
 	}
 
 	void DeferredRendering::EndShadowPass()
 	{
 		s_DeferredData->ShadowMapFBO->Unbind();
-		glCullFace(GL_BACK);
+		//glDisable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
+		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+	}
+
+	void DeferredRendering::BlurShadowPass()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glViewport(0, 0, s_DeferredData->BlurShadowMapFBOs[0]->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
+
+		// --------------------Pixel Shader----------------------
+		s_DeferredData->BlurShadowMapShader->Bind();
+		s_DeferredData->VertexArray->Bind();
+		
+		//Horizen Pass
+		s_DeferredData->BlurShadowMapFBOs[0]->Bind();
+		s_DeferredData->BlurShadowMapShader->Bind();
+		s_DeferredData->BlurShadowMapShader->SetInt("u_Horizontal", 1);
+		
+		//Original Shadow Map
+		s_DeferredData->g_ShadowMap->Bind(0);
+		s_DeferredData->BlurShadowMapShader->SetInt("u_SceneTexture", 0);
+		s_DeferredData->VertexArray->Bind();
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		s_DeferredData->VertexArray->Unbind();
+		s_DeferredData->BlurShadowMapShader->Unbind();
+		s_DeferredData->BlurShadowMapFBOs[0]->Unbind();
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//Vertical Pass
+		s_DeferredData->BlurShadowMapFBOs[1]->Bind();
+		s_DeferredData->BlurShadowMapShader->Bind();
+		s_DeferredData->BlurShadowMapShader->SetInt("u_Horizontal", 0);
+		
+		//Shadow Map after blur
+		s_DeferredData->g_BlurShadowMaps[0]->Bind(0);
+		s_DeferredData->BlurShadowMapShader->SetInt("u_SceneTexture", 0);
+		s_DeferredData->VertexArray->Bind();
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		s_DeferredData->VertexArray->Unbind();
+		s_DeferredData->BlurShadowMapShader->Unbind();
+		s_DeferredData->BlurShadowMapFBOs[1]->Unbind();
 		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
@@ -212,9 +285,10 @@ namespace Titan {
 	void DeferredRendering::MomentShadowMapPass(PerspectiveCamera& camera, Light& light)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		glDisable(GL_DEPTH_TEST);
 		s_DeferredData->DirectionalLightShader->Bind();
 		light.ShaderBinding(s_DeferredData->DirectionalLightShader);
+		s_DeferredData->DirectionalLightShader->SetFloat3("u_ViewPos", camera.GetPosition());
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i);
 		}
@@ -225,6 +299,16 @@ namespace Titan {
 		s_DeferredData->DirectionalLightShader->Unbind();
 	}
 
+	void DeferredRendering::BeginMomentShadowMapPass()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		s_DeferredData->DirectionalLightShader->Bind();
+	}
+
+	void DeferredRendering::EndMomentShadowMapPass()
+	{
+	}
+
 	const std::shared_ptr<Shader>& DeferredRendering::GetGeometryShader()
 	{
 		return s_DeferredData->GeometryShader;
@@ -233,6 +317,11 @@ namespace Titan {
 	const std::shared_ptr<Shader>& DeferredRendering::GetShadowMapShader()
 	{
 		return s_DeferredData->ShadowMapShader;
+	}
+
+	const std::shared_ptr<Shader>& DeferredRendering::GetMomentShadowMapShader()
+	{
+		return s_DeferredData->DirectionalLightShader;
 	}
 
 	const std::shared_ptr<Shader>& DeferredRendering::GetPBRShader()

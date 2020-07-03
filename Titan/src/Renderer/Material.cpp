@@ -19,10 +19,6 @@ namespace Titan {
 	{
 		m_Texture = Texture2D::Create(1,1);
 		m_Phong = std::make_shared<PhongElements>();
-		m_Phong->Ambient = glm::vec3(0.4);
-		m_Phong->Diffuse = glm::vec3(0.3);
-		m_Phong->Specular = glm::vec3(0.05f);
-		m_Phong->Shininess = 16.0;
 	}
 
 	PhongMaterial::~PhongMaterial()

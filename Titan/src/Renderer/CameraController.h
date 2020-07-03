@@ -26,7 +26,7 @@ namespace Titan {
 		bool m_TextureMode = true;
 	private:
 		PerspectiveCamera m_Camera;
-		glm::vec3 m_CameraPosition = { 0.0f, 0.0, 5.0f };
+		glm::vec3 m_CameraPosition = glm::vec3(-2.3, 4.3, 7.85);
 		float m_CameraRotation = 0.0f;
 		float m_CameraMoveSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;
