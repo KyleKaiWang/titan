@@ -55,10 +55,10 @@ namespace Titan {
 			});
 		s_DeferredData->VertexArray->AddVertexBuffer(s_DeferredData->VertexBuffer);
 		s_DeferredData->VertexArray->Unbind();
-		s_DeferredData->GeometryShader = Shader::Create("shaders/Geometry.vs", "shaders/Geometry.fs");
+		s_DeferredData->GeometryShader = Shader::Create("shaders/Geometry_PBR.vs", "shaders/Geometry_PBR.fs");
 		s_DeferredData->ShadowMapShader = Shader::Create("shaders/ShadowMapPass_MSM.vs", "shaders/ShadowMapPass_MSM.fs");
 		s_DeferredData->BlurShadowMapShader = Shader::Create("shaders/GaussianBlur.vs", "shaders/GaussianBlur.fs");
-		s_DeferredData->DirectionalLightShader = Shader::Create("shaders/MSM.vs", "shaders/MSM.fs");
+		s_DeferredData->DirectionalLightShader = Shader::Create("shaders/LightingPass_PBR.vs", "shaders/LightingPass_PBR.fs");
 
 		s_DeferredData->PointLightShader = Shader::Create("shaders/PointLightPass.vs", "shaders/PointLightPass.fs");
 

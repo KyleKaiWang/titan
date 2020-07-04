@@ -53,10 +53,20 @@ void SandboxDeferred::OnAttach()
 	PhongMaterial4->GetPhong()->Ambient = glm::vec3(1.0);
 	PhongMaterial4->GetPhong()->Diffuse = glm::vec3(1.0);
 
+	//PBR Textures
+	std::shared_ptr<Titan::PBRTextures> pbrTexs = std::make_shared<Titan::PBRTextures>();
+	pbrTexs->Albedo = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Albedo.jpg");
+	pbrTexs->Normal = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Normal.jpg");
+	pbrTexs->Metallic = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Metallic.jpg");
+	pbrTexs->Roughness = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Roughness.jpg");
+
+	std::shared_ptr<Titan::PBRMaterial> pbrMaterial = std::make_shared<Titan::PBRMaterial>();
+	pbrMaterial->SetPBRTextures(pbrTexs);
+
 	//Test Basic Mesh System
 	m_DrawSphere = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
 	m_DrawSphere->Init();
-	m_DrawSphere->SetMeshMaterial(PhongMaterial1);
+	m_DrawSphere->SetMeshMaterial(pbrMaterial);
 
 	m_DrawPlane = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Plane>(Titan::Plane(15.0f, 15.0f, 15, 15)));
 	m_DrawPlane->Init();
@@ -115,28 +125,30 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	Titan::DeferredRendering::EndGeometryPass();
 
 	//Shadow Map Pass
-	Titan::DeferredRendering::BeginShadowPass();
-
-	Titan::Renderer::BeginScene(m_CameraController.GetCamera());
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
-	Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawSphere, m_Light, transform);
-
-	transform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 5.0f));
-	Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawCube, m_Light, transform);
-
-	transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 2.0f));
-	Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawPlane, m_Light, transform);
-
-	Titan::DeferredRendering::GetShadowMapShader()->Unbind();
-	Titan::Renderer::EndScene();
-
-	Titan::DeferredRendering::EndShadowPass();
+	//Titan::DeferredRendering::BeginShadowPass();
+	//
+	//Titan::Renderer::BeginScene(m_CameraController.GetCamera());
+	//glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawSphere, m_Light, transform);
+	//
+	//transform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 5.0f));
+	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawCube, m_Light, transform);
+	//
+	//transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 2.0f));
+	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawPlane, m_Light, transform);
+	//
+	//Titan::DeferredRendering::GetShadowMapShader()->Unbind();
+	//Titan::Renderer::EndScene();
+	//Titan::DeferredRendering::EndShadowPass();
 
 	//Blur Pass
-	Titan::DeferredRendering::BlurShadowPass();
+	//Titan::DeferredRendering::BlurShadowPass();
 
 	//MSM Pass
-	Titan::DeferredRendering::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
+	//Titan::DeferredRendering::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
+
+	//Lighting Pass
+	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
 
 	//Point Light Pass
 	//Titan::DeferredRendering::PointLightPass(m_CameraController.GetCamera(), m_PointLights);
