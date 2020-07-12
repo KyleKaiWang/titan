@@ -26,4 +26,13 @@ void main()
 	g_Normal = vec4(texture( u_Normal, v_TexCoord ).rgb, 1.0f);
 	g_MetallicRoughness.r = texture( u_Metallic, v_TexCoord ).r;
 	g_MetallicRoughness.g = texture( u_Roughness, v_TexCoord ).r;
+	g_MetallicRoughness.b = 1.0f;
+	g_MetallicRoughness.a = 1.0f;
+	
+	//g_Albedo = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	//g_Normal = vec4(texture( u_Normal, v_TexCoord ).rgb, 1.0f);
+	//g_MetallicRoughness.r = 1.0f;
+	//g_MetallicRoughness.g = 1.0f;
+	//g_MetallicRoughness.b = 1.0f;
+	//g_MetallicRoughness.a = 1.0f;
 }
