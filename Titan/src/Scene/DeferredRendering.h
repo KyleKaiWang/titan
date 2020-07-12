@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "Renderer/Buffer.h"
 #include "Renderer/Lighting.h"
+#include "Renderer/Texture.h"
 
 namespace Titan {
 
@@ -18,16 +19,18 @@ namespace Titan {
 		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
 		static void PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights);
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
-		static void BeginMomentShadowMapPass();
-		static void EndMomentShadowMapPass();
+		static void BeginSkyboxPass();
+		static void EndSkyboxPass();
 
 		static const std::shared_ptr<Shader>& GetGeometryShader();
 		static const std::shared_ptr<Shader>& GetShadowMapShader();
 		static const std::shared_ptr<Shader>& GetMomentShadowMapShader();
 		static const std::shared_ptr<Shader>& GetPBRShader();
+		static const std::shared_ptr<Shader>& GetSkyboxShader();
+
 		static const std::shared_ptr<Texture2D>& GetShadowMapTexture();
 
 		static std::vector<std::shared_ptr<Texture2D>> GBufferTextures;
-
+		static std::vector<std::shared_ptr<Texture>> DebugTextures;
 	};
 }

@@ -47,7 +47,6 @@ void SandboxDeferred::OnAttach()
 	PhongMaterial3->GetPhong()->Ambient = glm::vec3(0.25);
 	PhongMaterial3->GetPhong()->Diffuse = glm::vec3(0.8);
 	PhongMaterial3->GetPhong()->Specular = glm::vec3(0.5);
-	PhongMaterial3->GetTexture() = Titan::Texture2D::Create("assets/textures/T_Metal01_BC.png");
 
 	std::shared_ptr<Titan::PhongMaterial> PhongMaterial4 = std::make_shared<Titan::PhongMaterial>();
 	PhongMaterial4->GetPhong()->Ambient = glm::vec3(1.0);
@@ -55,30 +54,61 @@ void SandboxDeferred::OnAttach()
 
 	//PBR Textures
 	std::shared_ptr<Titan::PBRTextures> pbrTexs = std::make_shared<Titan::PBRTextures>();
-	pbrTexs->Albedo = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Albedo.jpg");
-	pbrTexs->Normal = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Normal.jpg");
-	pbrTexs->Metallic = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Metallic.jpg");
-	pbrTexs->Roughness = Titan::Texture2D::Create("assets/textures/T_Marble006_2K_Roughness.jpg");
 
+	pbrTexs->Albedo = Titan::Texture2D::Create("assets/textures/brushed-metal_A.png");
+	pbrTexs->Normal = Titan::Texture2D::Create("assets/textures/brushed-metal_N.png");
+	pbrTexs->Metallic = Titan::Texture2D::Create("assets/textures/brushed-metal_M.png");
+	pbrTexs->Roughness = Titan::Texture2D::Create("assets/textures/brushed-metal_R.png");
+
+	std::shared_ptr<Titan::PBRTextures> pbrTexs2 = std::make_shared<Titan::PBRTextures>();
+	pbrTexs2->Albedo = Titan::Texture2D::Create("assets/textures/Metal003_2K_A.jpg");
+	pbrTexs2->Normal = Titan::Texture2D::Create("assets/textures/Metal003_2K_N.jpg");
+	pbrTexs2->Metallic = Titan::Texture2D::Create("assets/textures/Metal003_2K_M.jpg");
+	pbrTexs2->Roughness = Titan::Texture2D::Create("assets/textures/Metal003_2K_R.jpg");
+
+	std::shared_ptr<Titan::PBRTextures> pbrTexs3 = std::make_shared<Titan::PBRTextures>();
+	pbrTexs3->Albedo = Titan::Texture2D::Create("assets/textures/lightgold_A.png");
+	pbrTexs3->Normal = Titan::Texture2D::Create("assets/textures/lightgold_N.png");
+	pbrTexs3->Metallic = Titan::Texture2D::Create("assets/textures/lightgold_M.png");
+	pbrTexs3->Roughness = Titan::Texture2D::Create("assets/textures/lightgold_R.png");
+	
 	std::shared_ptr<Titan::PBRMaterial> pbrMaterial = std::make_shared<Titan::PBRMaterial>();
 	pbrMaterial->SetPBRTextures(pbrTexs);
+	m_PBRMats.push_back(pbrMaterial);
+
+	std::shared_ptr<Titan::PBRMaterial> pbrMaterial2 = std::make_shared<Titan::PBRMaterial>();
+	pbrMaterial2->SetPBRTextures(pbrTexs2);
+	m_PBRMats.push_back(pbrMaterial2);
+
+	std::shared_ptr<Titan::PBRMaterial> pbrMaterial3 = std::make_shared<Titan::PBRMaterial>();
+	pbrMaterial3->SetPBRTextures(pbrTexs3);
+	m_PBRMats.push_back(pbrMaterial3);
 
 	//Test Basic Mesh System
+	std::shared_ptr<Titan::TriangleMesh> model;
+	model = Titan::TriangleMesh::Create("assets/meshes/teapot.obj");
+	m_DrawModel = model;
+	m_DrawModel->Init();
+
 	m_DrawSphere = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
 	m_DrawSphere->Init();
-	m_DrawSphere->SetMeshMaterial(pbrMaterial);
+	m_DrawSphere->SetMeshMaterial(pbrMaterial2);
+
+	m_DrawCube = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Cube>());
+	m_DrawCube->Init();
+	m_DrawCube->SetMeshMaterial(pbrMaterial);
 
 	m_DrawPlane = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Plane>(Titan::Plane(15.0f, 15.0f, 15, 15)));
 	m_DrawPlane->Init();
 	m_DrawPlane->SetMeshMaterial(PhongMaterial2);
 
-	m_DrawCube = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Cube>());
-	m_DrawCube->Init();
-	m_DrawCube->SetMeshMaterial(PhongMaterial3);
 
 	m_DrawLight = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
 	m_DrawLight->Init();
 	m_DrawLight->SetMeshMaterial(PhongMaterial4);
+
+	m_DrawSkybox = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Skybox>(100.0f));
+	m_DrawSkybox->Init();
 
 	//Setting Deferred Shading
 	//---------------------------------------------------------------------------------
@@ -97,61 +127,38 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 
 	auto renderScene = [&](const std::shared_ptr<Titan::Shader>& shader){
 		Titan::Renderer::BeginScene(m_CameraController.GetCamera());
-		//for (int i = 1; i <= NUM_MESHS; i+=2) {
-		//	for (int j = 1; j <= NUM_MESHS; ++j) {
-		//		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f * j, 1.0f * i, 0.0f));
-		//		Titan::Renderer::Submit(shader, m_DrawMesh, m_Light, transform);
-		//	}
-		//}
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+		//Titan::Renderer::Submit(shader, m_DrawModel, m_Light, transform);
+
+		m_DrawSphere->SetMeshMaterial(m_PBRMats[0]);
+		transform = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.0f, -2.0f));
 		Titan::Renderer::Submit(shader, m_DrawSphere, m_Light, transform);
-
-		transform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 5.0f));
-		Titan::Renderer::Submit(shader, m_DrawCube, m_Light, transform);
-
-		transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 2.0f));
-		Titan::Renderer::Submit(shader, m_DrawPlane, m_Light, transform);
 		
-		transform = glm::translate(glm::mat4(1.0f), m_Light.Position) * glm::scale(glm::mat4(1.0f), { 0.1, 0.1, 0.1f });
-		Titan::Renderer::Submit(shader, m_DrawLight, m_Light, transform);
+		m_DrawSphere->SetMeshMaterial(m_PBRMats[1]);
+		transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
+		Titan::Renderer::Submit(shader, m_DrawSphere, m_Light, transform);
 		
-		shader->Unbind();
+		m_DrawSphere->SetMeshMaterial(m_PBRMats[2]);
+		transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+		Titan::Renderer::Submit(shader, m_DrawSphere, m_Light, transform);
+		
+		shader->Unbind();		
+
 		Titan::Renderer::EndScene();
 	};
 
 	//Geometry Pass
 	Titan::DeferredRendering::BeginGeometryPass();
 	renderScene(Titan::DeferredRendering::GetGeometryShader());
-	Titan::DeferredRendering::EndGeometryPass();
-
-	//Shadow Map Pass
-	//Titan::DeferredRendering::BeginShadowPass();
-	//
-	//Titan::Renderer::BeginScene(m_CameraController.GetCamera());
-	//glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
-	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawSphere, m_Light, transform);
-	//
-	//transform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 5.0f));
-	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawCube, m_Light, transform);
-	//
-	//transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 2.0f));
-	//Titan::Renderer::Submit(Titan::DeferredRendering::GetShadowMapShader(), m_DrawPlane, m_Light, transform);
-	//
-	//Titan::DeferredRendering::GetShadowMapShader()->Unbind();
-	//Titan::Renderer::EndScene();
-	//Titan::DeferredRendering::EndShadowPass();
-
-	//Blur Pass
-	//Titan::DeferredRendering::BlurShadowPass();
-
-	//MSM Pass
-	//Titan::DeferredRendering::MomentShadowMapPass(m_CameraController.GetCamera(), m_Light);
+	Titan::DeferredRendering::EndGeometryPass();	
 
 	//Lighting Pass
 	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
 
-	//Point Light Pass
-	//Titan::DeferredRendering::PointLightPass(m_CameraController.GetCamera(), m_PointLights);
+	//Draw Skybox
+	Titan::DeferredRendering::BeginSkyboxPass();
+	Titan::Renderer::Submit(Titan::DeferredRendering::GetSkyboxShader(), m_DrawSkybox->GetMeshVertexArray());
+	Titan::DeferredRendering::EndSkyboxPass();
 }
 
 void SandboxDeferred::OnImGuiRender()
@@ -175,12 +182,11 @@ void SandboxDeferred::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(x, y));
 	ImGui::Begin("GBuffer", 0, ImGuiWindowFlags_NoCollapse);
-	ImGui::Image((void*)Titan::DeferredRendering::GetShadowMapTexture()->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
 	for(int i = 0; i < Titan::DeferredRendering::GBufferTextures.size(); ++i) {
 		ImGui::Image((void*)Titan::DeferredRendering::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();
 	}
-		
+	ImGui::Image((void*)Titan::DeferredRendering::DebugTextures[0]->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
 	ImGui::End();
 }
 
