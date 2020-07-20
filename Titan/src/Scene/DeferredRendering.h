@@ -2,8 +2,16 @@
 #include "Scene.h"
 #include "Renderer/Buffer.h"
 #include "Renderer/Lighting.h"
+#include "Renderer/Texture.h"
 
 namespace Titan {
+
+	struct SSAOParameters
+	{
+		int kernelSize = 64;
+		float radius = 0.5;
+		float bias = 0.025;
+	};
 
 	class DeferredRendering
 	{
@@ -15,19 +23,25 @@ namespace Titan {
 		static void BeginShadowPass();
 		static void EndShadowPass();
 		static void BlurShadowPass();
+		static void SSAOPass(PerspectiveCamera& camera);
+		static void SSAOBlurPass();
 		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
 		static void PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights);
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
-		static void BeginMomentShadowMapPass();
-		static void EndMomentShadowMapPass();
+		static void BeginSkyboxPass();
+		static void EndSkyboxPass();
 
 		static const std::shared_ptr<Shader>& GetGeometryShader();
 		static const std::shared_ptr<Shader>& GetShadowMapShader();
-		static const std::shared_ptr<Shader>& GetMomentShadowMapShader();
-		static const std::shared_ptr<Shader>& GetPBRShader();
+		static const std::shared_ptr<Shader>& GetLightingShader();
+		static const std::shared_ptr<Shader>& GetSkyboxShader();
+
 		static const std::shared_ptr<Texture2D>& GetShadowMapTexture();
 
-		static std::vector<std::shared_ptr<Texture2D>> GBufferTextures;
-
+		static SSAOParameters SSAOParams;
+		static std::vector<std::shared_ptr<Texture>> GBufferTextures;
+		static std::vector<std::shared_ptr<Texture>> DebugTextures;
+		static unsigned int NoiseTexture;
+		static bool EnableAO;
 	};
 }

@@ -22,6 +22,38 @@ namespace Titan {
 		aiProcess_Debone |
 		aiProcess_ValidateDataStructure;
 
+	Model::Model(const std::string& filename)
+	{
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(filename, ImportFlags);
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+			TITAN_CORE_ASSERT(false, "Failed to load mesh file: + %s ", filename);
+		}
+		else {
+			ProcessNode(scene->mRootNode, scene);
+		}
+	}
+
+	void Model::ProcessNode(aiNode* node, const aiScene* scene)
+	{
+		// process each mesh located at the current node
+		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
+		{
+			// the node object only contains indices to index the actual objects in the scene. 
+			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			std::shared_ptr<TriangleMesh> triMesh = std::make_shared<TriangleMesh>(mesh);
+			Meshes.push_back(triMesh);
+		}
+
+		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+		for (unsigned int i = 0; i < node->mNumChildren; ++i)
+		{
+			ProcessNode(node->mChildren[i], scene);
+		}
+	}
+
 	Mesh::Mesh()
 	{
 		m_Material = std::make_shared<PhongMaterial>();
@@ -126,43 +158,11 @@ namespace Titan {
 		m_Indices.reserve(mesh->mNumFaces * 3);
 		for (size_t i = 0; i < mesh->mNumFaces; ++i)
 		{
-			assert(mesh->mFaces[i].mNumIndices == 3);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[0]);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[1]);
-			m_Indices.push_back(mesh->mFaces[i].mIndices[2]);
+			for (size_t j = 0; j < mesh->mFaces[i].mNumIndices; ++j)
+				m_Indices.push_back(mesh->mFaces[i].mIndices[j]);
 		}
-	}
 
-	std::shared_ptr<TriangleMesh> TriangleMesh::Create(const std::string& filename)
-	{
-		std::printf("Loading mesh: %s\n", filename.c_str());
-
-		std::shared_ptr<TriangleMesh> mesh;
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(filename, ImportFlags);
-		if (scene && scene->HasMeshes()) {
-			mesh = std::shared_ptr<TriangleMesh>(new TriangleMesh{ scene->mMeshes[0] });
-		}
-		else {
-			TITAN_CORE_ASSERT(false, "Failed to load mesh file: + %s ", filename);
-		}
-		return mesh;
-	}
-
-	std::shared_ptr<TriangleMesh> TriangleMesh::CreateByData(const std::string& data)
-	{
-		std::shared_ptr<TriangleMesh> mesh;
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFileFromMemory(data.c_str(), data.length(), ImportFlags, "nff");
-		if (scene && scene->HasMeshes()) {
-			mesh = std::shared_ptr<TriangleMesh>(new TriangleMesh{ scene->mMeshes[0] });
-		}
-		else {
-			TITAN_CORE_ASSERT(false, "Failed to create mesh from data: + %s ", data);
-		}
-		return mesh;
+		Mesh::Init();
 	}
 
 	Cube::Cube(float _size)

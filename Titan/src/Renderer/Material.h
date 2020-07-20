@@ -39,6 +39,7 @@ namespace Titan {
 
 		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
 		inline std::shared_ptr<PBRTextures> GetPBRTextures() { return m_PBR; }
+		inline void SetPBRTextures(std::shared_ptr<PBRTextures> pbrTexs) { m_PBR = pbrTexs; }
 
 	private:
 		std::shared_ptr<PBRTextures> m_PBR;

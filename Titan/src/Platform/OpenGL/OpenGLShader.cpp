@@ -145,7 +145,8 @@ namespace Titan {
 
 			return;
 		}
-
+		auto err = glGetError();
+		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 		glDetachShader(program, computeShader);
 	}
 

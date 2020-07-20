@@ -16,15 +16,15 @@ public:
 private:
 	Titan::CameraController m_CameraController;
 	Titan::Light m_Light;
+	std::shared_ptr<Titan::Model> m_DrawModel;
 	std::shared_ptr<Titan::Mesh> m_DrawLight;
 	std::shared_ptr<Titan::Mesh> m_DrawSphere;
 	std::shared_ptr<Titan::Mesh> m_DrawCube;
 	std::shared_ptr<Titan::Mesh> m_DrawPlane;
+	std::shared_ptr<Titan::Mesh> m_DrawSkybox;
 
-	Titan::Ref<Titan::TextureCube> m_TextureCube;
-	Titan::Ref<Titan::Shader> m_SkyboxShader;
-	Titan::Mesh* m_DrawSkybox;
-
-	std::shared_ptr<Titan::Scene> m_Scene;
+	std::vector<std::shared_ptr<Titan::PBRMaterial>> m_PBRMats;
 	std::vector<Titan::PointLight> m_PointLights;
+
+	std::shared_ptr<Titan::Framebuffer> m_FBO;
 };

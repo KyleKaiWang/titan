@@ -14,6 +14,7 @@ namespace Titan {
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
+		virtual uint32_t GetShaderID() const override { return m_RendererID; }
 
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetFloat(const std::string& name, float value) override;

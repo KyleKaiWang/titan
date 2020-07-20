@@ -6,9 +6,10 @@
 #include "Renderer/Material.h"
 
 struct aiMesh;
+struct aiNode;
+struct aiScene;
 
 namespace Titan {
-	
 
 	class Mesh
 	{
@@ -43,9 +44,6 @@ namespace Titan {
 	{
 	public:
 		TriangleMesh(const aiMesh* mesh);
-
-		static std::shared_ptr<TriangleMesh> Create(const std::string& filename);
-		static std::shared_ptr<TriangleMesh> CreateByData(const std::string& data);
 	};
 
 	class Cube : public Mesh
@@ -76,5 +74,14 @@ namespace Titan {
 	{
 	public:
 		Plane(float xsize, float zsize, int xdivs, int zdivs, float smax = 1.0f, float tmax = 1.0f);
+	};
+
+	class Model
+	{
+	public:
+		Model(const std::string& filename);
+		std::vector<std::shared_ptr<Mesh>> Meshes;
+
+		void ProcessNode(aiNode* node, const aiScene* scene);
 	};
 }
