@@ -16,9 +16,11 @@ layout(binding = 1) uniform sampler2D g_WorldNormal;
 layout(binding = 2) uniform sampler2D g_Albedo;
 layout(binding = 3) uniform sampler2D g_Normal;
 layout(binding = 4) uniform sampler2D g_MetallicRoughness;
-layout(binding = 5) uniform samplerCube u_SpecularTexture;
-layout(binding = 6) uniform samplerCube u_IrradianceTexture;
-layout(binding = 7) uniform sampler2D u_SpecularBRDF_LUT;
+layout(binding = 5) uniform samplerCube g_SpecularTexture;
+layout(binding = 6) uniform samplerCube g_IrradianceTexture;
+layout(binding = 7) uniform sampler2D g_SpecularBRDF_LUT;
+layout(binding = 8) uniform sampler2D g_SSAO;
+layout(binding = 9) uniform sampler2D g_SSAOBlur;
 
 uniform vec3 u_LightPos[NumLights];
 uniform vec3 u_LightDir;
@@ -77,6 +79,7 @@ void main()
     vec3 worldNormal = vec3( texture( g_WorldNormal, v_TexCoord ) );
     vec3 albedo = texture(g_Albedo, v_TexCoord).rgb;
 	//vec3 normal = texture(g_Normal, v_TexCoord).rgb;
+	float ao = texture(g_SSAOBlur, v_TexCoord).r;
 	
 	vec3 tangentNormal = texture(g_Normal, v_TexCoord).xyz * 2.0 - 1.0;
 
@@ -149,17 +152,17 @@ void main()
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;	  
     
-    vec3 irradiance = texture(u_IrradianceTexture, N).rgb;
+    vec3 irradiance = texture(g_IrradianceTexture, N).rgb;
     vec3 diffuse      = irradiance * albedo;
     
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(u_SpecularTexture, R,  roughness * MAX_REFLECTION_LOD).rgb;    
-    vec2 brdf  = texture(u_SpecularBRDF_LUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 prefilteredColor = textureLod(g_SpecularTexture, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(g_SpecularBRDF_LUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
     
 	vec3 ambient = (kD * diffuse + specular);
-    vec3 col = ambient + Lo;
+    vec3 col = (ambient + Lo) * ao;
 
     // HDR tonemapping
     col = col / (col + vec3(1.0));
