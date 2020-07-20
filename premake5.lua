@@ -17,12 +17,13 @@ IncludeDir["Glad"] = "Titan/thirdparty/Glad/include"
 IncludeDir["ImGui"] = "Titan/thirdparty/imgui"
 IncludeDir["glm"] = "Titan/thirdparty/glm"
 IncludeDir["stb_image"] = "Titan/thirdparty/stb_image"
+IncludeDir["assimp"] = "Titan/thirdparty/assimp/include"
 
 group "Dependencies"
 	include "Titan/thirdparty/GLFW"
 	include "Titan/thirdparty/Glad"
 	include "Titan/thirdparty/imgui"
-
+	
 group ""
 project "Titan"
 	location "Titan"
@@ -60,7 +61,8 @@ project "Titan"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.assimp}"
 	}
 
 	links 
@@ -68,6 +70,7 @@ project "Titan"
 		"GLFW",
 		"Glad",
 		"ImGui",
+		"Titan/thirdparty/assimp/lib/assimp-vc142-mtd.lib",
 		"opengl32.lib"
 	}
 
@@ -88,11 +91,6 @@ project "Titan"
 
 	filter "configurations:Release"
 		defines "TITAN_RELEASE"
-		runtime "Release"
-		optimize "on"
-
-	filter "configurations:Dist"
-		defines "TITAN_DIST"
 		runtime "Release"
 		optimize "on"
 
