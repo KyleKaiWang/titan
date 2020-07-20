@@ -2,7 +2,7 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Scene/Scene.h"
 #include "Renderer/Material.h"
-#include "Renderer/PerspectiveCamera.h"
+#include "Renderer/Camera.h"
 #include "imgui/imgui.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
