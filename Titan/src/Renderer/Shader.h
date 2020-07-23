@@ -16,6 +16,7 @@ namespace Titan {
 		virtual uint32_t GetShaderID() const = 0;
 
 		virtual void SetInt(const std::string& name, int value) = 0;
+		virtual void SetInt2(const std::string& name, const glm::ivec2& value) = 0;
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) = 0;

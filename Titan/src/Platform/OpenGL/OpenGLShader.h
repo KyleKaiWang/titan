@@ -17,6 +17,7 @@ namespace Titan {
 		virtual uint32_t GetShaderID() const override { return m_RendererID; }
 
 		virtual void SetInt(const std::string& name, int value) override;
+		virtual void SetInt2(const std::string& name, const glm::ivec2& value) override;
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
@@ -26,6 +27,7 @@ namespace Titan {
 		virtual void SetBlock(const std::string& name, uint32_t value) override;
 
 		void UploadUniformInt(const std::string& name, int value);
+		void UploadUniformInt2(const std::string& name, const glm::ivec2& value);
 		void UploadUniformFloat(const std::string& name, float value);
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& value);
 		void UploadUniformFloat3(const std::string& name, const glm::vec3& value);

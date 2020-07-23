@@ -170,6 +170,11 @@ namespace Titan {
 		UploadUniformInt(name, value);
 	}
 
+	void OpenGLShader::SetInt2(const std::string& name, const glm::ivec2& value)
+	{
+		UploadUniformInt2(name, value);
+	}
+
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
 		UploadUniformFloat(name, value);
@@ -209,6 +214,12 @@ namespace Titan {
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniform1i(location, value);
+	}
+
+	void OpenGLShader::UploadUniformInt2(const std::string& name, const glm::ivec2& value)
+	{
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform2i(location, value.x, value.y);
 	}
 
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
