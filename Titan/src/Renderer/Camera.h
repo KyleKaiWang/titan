@@ -19,7 +19,7 @@ namespace Titan{
         float GetRotation() const { return m_Rotation; }
         void SetRotation(float rotation) { m_Rotation = rotation; }
 
-        virtual void UpdateViewMatrix() = 0;
+        virtual void UpdateViewMatrix() {};
 
     protected:
         glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
