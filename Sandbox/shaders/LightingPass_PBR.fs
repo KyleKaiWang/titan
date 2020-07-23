@@ -20,7 +20,6 @@ layout(binding = 5) uniform samplerCube g_SpecularTexture;
 layout(binding = 6) uniform samplerCube g_IrradianceTexture;
 layout(binding = 7) uniform sampler2D g_SpecularBRDF_LUT;
 layout(binding = 8) uniform sampler2D g_SSAO;
-layout(binding = 9) uniform sampler2D g_SSAOBlur;
 
 uniform vec3 u_LightPos[NumLights];
 uniform vec3 u_LightDir;
@@ -79,7 +78,7 @@ void main()
     vec3 worldNormal = vec3( texture( g_WorldNormal, v_TexCoord ) );
     vec3 albedo = texture(g_Albedo, v_TexCoord).rgb;
 	//vec3 normal = texture(g_Normal, v_TexCoord).rgb;
-	float ao = texture(g_SSAOBlur, v_TexCoord).r;
+	float ao = texture(g_SSAO, v_TexCoord).r;
 	
 	vec3 tangentNormal = texture(g_Normal, v_TexCoord).xyz * 2.0 - 1.0;
 
@@ -156,7 +155,7 @@ void main()
     vec3 diffuse      = irradiance * albedo;
     
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-    const float MAX_REFLECTION_LOD = 4.0;
+    const float MAX_REFLECTION_LOD = 10.0;
     vec3 prefilteredColor = textureLod(g_SpecularTexture, R,  roughness * MAX_REFLECTION_LOD).rgb;    
     vec2 brdf  = texture(g_SpecularBRDF_LUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
@@ -170,5 +169,5 @@ void main()
     // gamma correct
     col = pow(col, vec3(1.0/2.2)); 
 	
-    color = vec4(col , 1.0);
+    color = vec4(col , 1.0f);
 }

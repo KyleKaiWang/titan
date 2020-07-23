@@ -1,7 +1,7 @@
-#include "SandboxDeferred.h"
+#include "SandboxDeferredRendering.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Scene/Scene.h"
-#include "Scene/DeferredRendering.h"
+#include "Renderer/DeferredRendering.h"
 #include "Renderer/Material.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Material.h"
@@ -10,14 +10,16 @@
 #include <glm/gtc/type_ptr.hpp>
 
 const int NUM_LIGHTS = 15;
-const int NUM_MESHS = 10;
 
-SandboxDeferred::SandboxDeferred()
+bool EnableSkybox = true;
+bool EnableSSAO = true;
+
+SandboxDeferredRendering::SandboxDeferredRendering()
 	: Layer("SandboxDeferred"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 100.0f)
 {
 }
 
-void SandboxDeferred::OnAttach()
+void SandboxDeferredRendering::OnAttach()
 {
 	//Point Lights
 	for (int i = 1; i <= NUM_LIGHTS; i+=4) {
@@ -74,10 +76,10 @@ void SandboxDeferred::OnAttach()
 	m_PBRMats.push_back(pbrMaterial2);
 
 	std::shared_ptr<Titan::PBRTextures> pbrTexs3 = std::make_shared<Titan::PBRTextures>();
-	pbrTexs3->Albedo = Titan::Texture2D::Create("assets/textures/lightgold_A.png");
-	pbrTexs3->Normal = Titan::Texture2D::Create("assets/textures/lightgold_N.png");
-	pbrTexs3->Metallic = Titan::Texture2D::Create("assets/textures/lightgold_M.png");
-	pbrTexs3->Roughness = Titan::Texture2D::Create("assets/textures/lightgold_R.png");
+	pbrTexs3->Albedo = Titan::Texture2D::Create("assets/textures/scuffed-plastic-A.png");
+	pbrTexs3->Normal = Titan::Texture2D::Create("assets/textures/scuffed-plastic-N.png");
+	pbrTexs3->Metallic = Titan::Texture2D::Create("assets/textures/scuffed-plastic-M.png");
+	pbrTexs3->Roughness = Titan::Texture2D::Create("assets/textures/scuffed-plastic-R.png");
 
 	std::shared_ptr<Titan::PBRMaterial> pbrMaterial3 = std::make_shared<Titan::PBRMaterial>();
 	pbrMaterial3->SetPBRTextures(pbrTexs3);
@@ -96,7 +98,11 @@ void SandboxDeferred::OnAttach()
 	//Test Basic Mesh System
 	m_DrawModel = std::make_shared<Titan::Model>("assets/meshes/sponza.obj");
 	for (auto mesh : m_DrawModel->Meshes)
-		mesh->SetMeshMaterial(pbrMaterial2);
+		mesh->SetMeshMaterial(pbrMaterial);
+
+	m_DrawModel2 = std::make_shared<Titan::Model>("assets/meshes/dragon.obj");
+	for (auto mesh : m_DrawModel2->Meshes)
+		mesh->SetMeshMaterial(pbrMaterial3);
 
 	m_DrawSphere = static_cast<std::shared_ptr<Titan::Mesh>>(std::make_shared<Titan::Sphere>());
 	m_DrawSphere->Init();
@@ -136,12 +142,12 @@ void SandboxDeferred::OnAttach()
 	m_FBO = Titan::Framebuffer::Create(desc);
 }
 
-void SandboxDeferred::OnDetach()
+void SandboxDeferredRendering::OnDetach()
 {
 
 }
 
-void SandboxDeferred::OnUpdate(Titan::Timestep ts)
+void SandboxDeferredRendering::OnUpdate(Titan::Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 	m_Light.UpdateViewProjection();
@@ -154,9 +160,24 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 			Titan::Renderer::Submit(shader, mesh, m_Light, transform);
 		}
 
-		m_DrawSphere->SetMeshMaterial(m_PBRMats[0]);
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.0f, -2.0f));
-		Titan::Renderer::Submit(shader, m_DrawSphere, m_Light, transform);
+		for (auto mesh : m_DrawModel2->Meshes) {
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 0.0f));
+			Titan::Renderer::Submit(shader, mesh, m_Light, transform);
+		}
+
+		//for (auto mesh : m_DrawModel->Meshes) {
+		//	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+		//	Titan::Renderer::Submit(shader, mesh, m_Light, transform);
+		//}
+		//
+		//for (auto mesh : m_DrawModel->Meshes) {
+		//	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 2.0f));
+		//	Titan::Renderer::Submit(shader, mesh, m_Light, transform);
+		//}
+
+		//m_DrawSphere->SetMeshMaterial(m_PBRMats[0]);
+		//glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.0f, -2.0f));
+		//Titan::Renderer::Submit(shader, m_DrawSphere, m_Light, transform);
 		//
 		//m_DrawSphere->SetMeshMaterial(m_PBRMats[1]);
 		//transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
@@ -176,19 +197,23 @@ void SandboxDeferred::OnUpdate(Titan::Timestep ts)
 	renderScene(Titan::DeferredRendering::GetGeometryShader());
 	Titan::DeferredRendering::EndGeometryPass();	
 
-	Titan::DeferredRendering::SSAOPass(m_CameraController.GetCamera());
-	Titan::DeferredRendering::SSAOBlurPass();
+	//SSAO Pass
+	if (EnableSSAO) {
+		Titan::DeferredRendering::SSAOPass(m_CameraController.GetCamera());
+	}
 
 	//Lighting Pass
 	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_Light);
 
 	//Draw Skybox
-	Titan::DeferredRendering::BeginSkyboxPass();
-	Titan::Renderer::Submit(Titan::DeferredRendering::GetSkyboxShader(), m_DrawSkybox->GetMeshVertexArray());
-	Titan::DeferredRendering::EndSkyboxPass();
+	if (EnableSkybox) {
+		Titan::DeferredRendering::BeginSkyboxPass();
+		Titan::Renderer::Submit(Titan::DeferredRendering::GetSkyboxShader(), m_DrawSkybox->GetMeshVertexArray());
+		Titan::DeferredRendering::EndSkyboxPass();
+	}
 }
 
-void SandboxDeferred::OnImGuiRender()
+void SandboxDeferredRendering::OnImGuiRender()
 {
 	//Camera and Lighting
 	ImGui::Begin("Debug", 0, ImGuiWindowFlags_NoCollapse);
@@ -205,14 +230,7 @@ void SandboxDeferred::OnImGuiRender()
 	ImGui::EndChild();
 	ImGui::End();
 
-	//SSAO Parameters
-	ImGui::Begin("SSAO", 0, ImGuiWindowFlags_NoCollapse);
-	ImGui::BeginChild("SSAO");
-	ImGui::DragInt("Kernel Size", &Titan::DeferredRendering::SSAOParams.kernelSize);
-	ImGui::DragFloat("Radius", &Titan::DeferredRendering::SSAOParams.radius);
-	ImGui::DragFloat("bias", &Titan::DeferredRendering::SSAOParams.bias);
-	ImGui::EndChild();
-	ImGui::End();
+	Titan::RendererSSAO::RenderDebug();
 
 	auto& window = Titan::Application::Get().GetWindow();
 	unsigned int x, y;
@@ -225,11 +243,8 @@ void SandboxDeferred::OnImGuiRender()
 		ImGui::Image((void*)Titan::DeferredRendering::GBufferTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();
 	}
-
-	//Noise Texture for SSAO
-	ImGui::Image((void*)Titan::DeferredRendering::NoiseTexture, ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
 	
-	//SSAO
+	//Debug 
 	for (int i = 0; i < Titan::DeferredRendering::DebugTextures.size(); ++i) {
 		ImGui::Image((void*)Titan::DeferredRendering::DebugTextures[i]->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
 		if (i % 2 == 0) ImGui::SameLine();
@@ -237,7 +252,7 @@ void SandboxDeferred::OnImGuiRender()
 	ImGui::End();
 }
 
-void SandboxDeferred::OnEvent(Titan::Event& event)
+void SandboxDeferredRendering::OnEvent(Titan::Event& event)
 {
 	m_CameraController.OnEvent(event);
 }

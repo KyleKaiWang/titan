@@ -1,21 +1,17 @@
 #include "tpch.h"
 #include "DeferredRendering.h"
-#include "../Renderer/Texture.h"
-#include "../Renderer/FrameBuffer.h"
+#include "Texture.h"
+#include "FrameBuffer.h"
 #include "Application.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <random>
 
 namespace Titan {
 
-	SSAOParameters DeferredRendering::SSAOParams;
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::GBufferTextures;
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::DebugTextures;
-	unsigned int DeferredRendering::NoiseTexture;
+
 	bool DeferredRendering::EnableAO = false;
-	std::vector<glm::vec3> ssaoKernel;
-	std::vector<float> ssaoNoise;
 
 	struct DeferredRenderingStorage
 	{
@@ -28,14 +24,10 @@ namespace Titan {
 		std::shared_ptr<Shader> LightingShader;
 		std::shared_ptr<Shader> PointLightShader;
 		std::shared_ptr<Shader> SkyboxShader;
-		std::shared_ptr<Shader> SSAOShader;
-		std::shared_ptr<Shader> SSAOBlurShader;
 
 		std::shared_ptr<Framebuffer> GBufferFBO;
 		std::shared_ptr<Framebuffer> ShadowMapFBO;
 		std::vector<std::shared_ptr<Framebuffer>> BlurShadowMapFBOs;
-		std::shared_ptr<Framebuffer> SSAOFBO;
-		std::shared_ptr<Framebuffer> SSAOBlurFBO;
 
 		std::shared_ptr<Texture2D> g_Posistion;
 		std::shared_ptr<Texture2D> g_WorldNormal;
@@ -44,9 +36,12 @@ namespace Titan {
 		std::shared_ptr<Texture2D> g_MetallicRoughness;
 		std::shared_ptr<Texture2D> g_ShadowMap;
 		std::vector<std::shared_ptr<Texture2D>> g_BlurShadowMaps;
-		std::shared_ptr<Texture2D> g_SSAO;
-		std::shared_ptr<Texture2D> g_SSAOBlur;
 
+		//Final Output Texture
+		std::shared_ptr<Framebuffer> OutputFBO;
+		std::shared_ptr<Texture2D> OutputTex;
+		std::shared_ptr<Texture2D> OutputTex_Depth;
+		
 		//IBL
 		std::shared_ptr<TextureCube> EnvTexture;
 		std::shared_ptr<TextureCube> IrradianceTexture;
@@ -79,11 +74,12 @@ namespace Titan {
 		s_DeferredData->LightingShader = Shader::Create("shaders/LightingPass_PBR.vs", "shaders/LightingPass_PBR.fs");
 		s_DeferredData->PointLightShader = Shader::Create("shaders/PointLightPass.vs", "shaders/PointLightPass.fs");
 		s_DeferredData->SkyboxShader = Shader::Create("shaders/Skybox.vs", "shaders/Skybox.fs");
-		s_DeferredData->SSAOShader= Shader::Create("shaders/SSAO.vs", "shaders/SSAO.fs");
-		s_DeferredData->SSAOBlurShader = Shader::Create("shaders/SSAOBlur.vs", "shaders/SSAOBlur.fs");
 		
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
+
+		//Rendering features initialization
+		RendererSSAO::Init();
 	}
 
 	void DeferredRendering::SetFrameBuffer(uint32_t width, uint32_t height)
@@ -118,6 +114,9 @@ namespace Titan {
 			GBufferTextures.push_back(s_DeferredData->g_Albedo);
 			GBufferTextures.push_back(s_DeferredData->g_Normal);
 			GBufferTextures.push_back(s_DeferredData->g_MetallicRoughness);
+
+			s_DeferredData->OutputTex_Depth = s_DeferredData->GBufferFBO->GetDepthAttachment();
+			DebugTextures.push_back(s_DeferredData->OutputTex_Depth);
 		}
 
 		////Shadow Map
@@ -243,28 +242,7 @@ namespace Titan {
 			GBufferTextures.push_back(s_DeferredData->BRDFLUTTexture);
 		}
 
-		//SSAO
-		{
-			TextureDesc texDesc;
-			texDesc.Width = width;
-			texDesc.Height = height;
-			texDesc.Format = GL_RGBA32F;
-			texDesc.MipLevels = 0;
-			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-			texDesc.Parameters.push_back(std::make_pair<uint32_t, uint32_t>(GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-			
-			FramebufferDesc desc;
-			desc.Width = width;
-			desc.Height = height;
-			desc.nrColorAttachment = 1;
-			desc.Depth = false;
-			desc.TexDesc = texDesc;
-			s_DeferredData->SSAOFBO = Framebuffer::Create(desc);
-			s_DeferredData->g_SSAO = s_DeferredData->SSAOFBO->GetColorAttachment(0);
-			DebugTextures.push_back(s_DeferredData->g_SSAO);
-		}
-
-		//SSAO Blur
+		//Final Output
 		{
 			TextureDesc texDesc;
 			texDesc.Width = width;
@@ -278,48 +256,21 @@ namespace Titan {
 			desc.Width = width;
 			desc.Height = height;
 			desc.nrColorAttachment = 1;
-			desc.Depth = false;
+			desc.Depth = true;
 			desc.TexDesc = texDesc;
-			s_DeferredData->SSAOBlurFBO = Framebuffer::Create(desc);
-			s_DeferredData->g_SSAOBlur = s_DeferredData->SSAOBlurFBO->GetColorAttachment(0);
-			DebugTextures.push_back(s_DeferredData->g_SSAOBlur);
+			s_DeferredData->OutputFBO = Framebuffer::Create(desc);
+			s_DeferredData->OutputTex = s_DeferredData->OutputFBO->GetColorAttachment(0);
+			//s_DeferredData->OutputTex_Depth = s_DeferredData->OutputFBO->GetDepthAttachment();
+			DebugTextures.push_back(s_DeferredData->OutputTex);
+			//DebugTextures.push_back(s_DeferredData->OutputTex_Depth);
 		}
-		
+	}
 
-		// generate sample kernel
-		// ----------------------
-		std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
-		std::default_random_engine generator;
-		for (unsigned int i = 0; i < 64; ++i)
-		{
-			glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
-			sample = glm::normalize(sample);
-			sample *= randomFloats(generator);
-			float scale = float(i) / 64.0;
-
-			// scale samples s.t. they're more aligned to center of kernel
-			// lerp
-			scale = 0.1f + scale * scale * (1.0f - 0.1f);
-			sample *= scale;
-			ssaoKernel.push_back(sample);
-		}
-
-		for (unsigned int i = 0; i < 16; i++)
-		{
-			glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
-			ssaoNoise.push_back(noise.x);
-			ssaoNoise.push_back(noise.y);
-			ssaoNoise.push_back(noise.z);
-		}
-		
-		glCreateTextures(GL_TEXTURE_2D, 1, &NoiseTexture);
-		glTextureStorage2D(NoiseTexture, 1, GL_RGB16F, 4, 4);
-		glTextureSubImage2D(NoiseTexture, 0, 0, 0, 4, 4, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-		glTextureParameteri(NoiseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(NoiseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTextureParameteri(NoiseTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(NoiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		std::cout << glGetError() << std::endl;
+	void DeferredRendering::DrawQuad()
+	{
+		s_DeferredData->VertexArray->Bind();
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		s_DeferredData->VertexArray->Unbind();
 	}
 
 	void DeferredRendering::BeginGeometryPass()
@@ -379,9 +330,7 @@ namespace Titan {
 		//Original Shadow Map
 		s_DeferredData->g_ShadowMap->Bind(0);
 		s_DeferredData->BlurShadowMapShader->SetInt("u_SceneTexture", 0);
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
+		DrawQuad();
 		s_DeferredData->BlurShadowMapShader->Unbind();
 		s_DeferredData->BlurShadowMapFBOs[0]->Unbind();
 
@@ -395,9 +344,7 @@ namespace Titan {
 		//Shadow Map after blur
 		s_DeferredData->g_BlurShadowMaps[0]->Bind(0);
 		s_DeferredData->BlurShadowMapShader->SetInt("u_SceneTexture", 0);
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
+		DrawQuad();
 		s_DeferredData->BlurShadowMapShader->Unbind();
 		s_DeferredData->BlurShadowMapFBOs[1]->Unbind();
 		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
@@ -405,47 +352,11 @@ namespace Titan {
 
 	void DeferredRendering::SSAOPass(PerspectiveCamera& camera)
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		s_DeferredData->SSAOFBO->Bind();
-		s_DeferredData->SSAOShader->Bind();
-		for (unsigned int i = 0; i < 64; ++i)
-			s_DeferredData->SSAOShader->SetFloat3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-		s_DeferredData->SSAOShader->SetMat4("u_ViewMatrix", camera.GetViewMatrix());
-		s_DeferredData->SSAOShader->SetMat4("u_Projection", camera.GetProjectionMatrix());
-		s_DeferredData->SSAOShader->SetInt("screenWidth", 1280);
-		s_DeferredData->SSAOShader->SetInt("screenHeight", 720);
-		s_DeferredData->SSAOShader->SetInt("kernelSize", SSAOParams.kernelSize);
-		s_DeferredData->SSAOShader->SetFloat("radius", SSAOParams.radius);
-		s_DeferredData->SSAOShader->SetFloat("bias", SSAOParams.bias);
-		s_DeferredData->SSAOShader->SetInt("texNoise", 2);
-		
-		s_DeferredData->g_Posistion->Bind(0);
-		s_DeferredData->g_Normal->Bind(1);
-		glBindTextureUnit(2, NoiseTexture);
-
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
-
-		s_DeferredData->SSAOShader->Unbind();
-		s_DeferredData->SSAOFBO->Unbind();
+		RendererSSAO::RenderSSAO(camera, s_DeferredData->g_Posistion, s_DeferredData->g_Normal);
+		RendererSSAO::RenderSSAOBlur();
 	}
 
-	void DeferredRendering::SSAOBlurPass()
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		s_DeferredData->SSAOBlurShader->Bind();
-		s_DeferredData->SSAOBlurFBO->Bind();
-		s_DeferredData->g_SSAO->Bind();
-
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
-
-		s_DeferredData->SSAOBlurShader->Unbind();
-		s_DeferredData->SSAOBlurFBO->Unbind();
-	}
-	//G-Buffers breaddown
+	//G-Buffers breakdown
 	//slot 0 : g_Posistion
 	//slot 1 : g_WorldNormal
 	//slot 2 : g_Albedo
@@ -455,13 +366,12 @@ namespace Titan {
 	//slot 6 : g_IrradianceTexture
 	//slot 7 : g_SpecularBRDF_LUT;
 	//slot 8 : g_SSAO;
-	//slot 9 : g_SSAOBlur;
 
 	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, Light& light)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
-
+		//s_DeferredData->OutputFBO->Bind();
 		s_DeferredData->LightingShader->Bind();
 		light.ShaderBinding(s_DeferredData->LightingShader);
 		s_DeferredData->LightingShader->SetFloat3("u_ViewPos", camera.GetPosition());
@@ -470,13 +380,11 @@ namespace Titan {
 		}
 
 		//SSAO binding
-		s_DeferredData->g_SSAO->Bind(8);
-		s_DeferredData->g_SSAO->Bind(9);
+		RendererSSAO::GetSSAOTexture()->Bind(8);
 		
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
+		DrawQuad();
 		s_DeferredData->LightingShader->Unbind();
+		//s_DeferredData->OutputFBO->Unbind();
 	}
 
 	void DeferredRendering::PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights)
@@ -503,9 +411,7 @@ namespace Titan {
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i + 1);
 		}
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
+		DrawQuad();
 		s_DeferredData->PointLightShader->Unbind();
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -522,9 +428,7 @@ namespace Titan {
 			GBufferTextures[i]->Bind(i);
 		}
 
-		s_DeferredData->VertexArray->Bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		s_DeferredData->VertexArray->Unbind();
+		DrawQuad();
 		s_DeferredData->LightingShader->Unbind();
 	}
 

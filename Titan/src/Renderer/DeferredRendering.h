@@ -1,30 +1,25 @@
 #pragma once
-#include "Scene.h"
-#include "Renderer/Buffer.h"
-#include "Renderer/Lighting.h"
-#include "Renderer/Texture.h"
+#include "../Scene/Scene.h"
+#include "Buffer.h"
+#include "Lighting.h"
+#include "Texture.h"
+#include "DOF.h"
+#include "RendererSSAO.h"
 
 namespace Titan {
-
-	struct SSAOParameters
-	{
-		int kernelSize = 64;
-		float radius = 0.5;
-		float bias = 0.025;
-	};
 
 	class DeferredRendering
 	{
 	public:
 		static void Init();
 		static void SetFrameBuffer(uint32_t width, uint32_t height);
+		static void DrawQuad();
 		static void BeginGeometryPass();
 		static void EndGeometryPass();
 		static void BeginShadowPass();
 		static void EndShadowPass();
 		static void BlurShadowPass();
 		static void SSAOPass(PerspectiveCamera& camera);
-		static void SSAOBlurPass();
 		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light);
 		static void PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights);
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);

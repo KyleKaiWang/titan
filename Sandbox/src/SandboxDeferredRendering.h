@@ -1,11 +1,11 @@
 #pragma once
 #include "Titan.h"
 
-class SandboxDeferred : public Titan::Layer
+class SandboxDeferredRendering : public Titan::Layer
 {
 public:
-	SandboxDeferred();
-	virtual ~SandboxDeferred() = default;
+	SandboxDeferredRendering();
+	virtual ~SandboxDeferredRendering() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
@@ -17,6 +17,7 @@ private:
 	Titan::CameraController m_CameraController;
 	Titan::Light m_Light;
 	std::shared_ptr<Titan::Model> m_DrawModel;
+	std::shared_ptr<Titan::Model> m_DrawModel2;
 	std::shared_ptr<Titan::Mesh> m_DrawLight;
 	std::shared_ptr<Titan::Mesh> m_DrawSphere;
 	std::shared_ptr<Titan::Mesh> m_DrawCube;
