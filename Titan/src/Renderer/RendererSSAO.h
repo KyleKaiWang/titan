@@ -7,9 +7,18 @@ namespace Titan {
 
 	struct SSAOParameters
 	{
-		int kernelSize = 64;
-		float radius = 0.5;
-		float bias = 0.025;
+		// Parameters for the AO pass
+		bool use_rendered_normals = false;
+		int n_samples = 64;
+		int turns = 64;
+		float ball_radius = 0.25;
+		float sigma = 0.5;
+		float kappa = 1.5;
+		float beta = 0.0;
+
+		// Parameters for the blurring pass
+		int filter_scale = 2;
+		float edge_sharpness = 1;
 	};
 
 	class RendererSSAO

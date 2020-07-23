@@ -25,6 +25,7 @@ uniform vec3 u_LightPos[NumLights];
 uniform vec3 u_LightDir;
 uniform vec3 u_LightDiffuse;
 uniform vec3 u_ViewPos;
+uniform int u_EnableSSAO = 1;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -78,8 +79,11 @@ void main()
     vec3 worldNormal = vec3( texture( g_WorldNormal, v_TexCoord ) );
     vec3 albedo = texture(g_Albedo, v_TexCoord).rgb;
 	//vec3 normal = texture(g_Normal, v_TexCoord).rgb;
-	float ao = texture(g_SSAO, v_TexCoord).r;
-	
+	float ao = 0.0;
+	if(u_EnableSSAO == 1)
+		ao = min(1.0f, texture(g_SSAO, v_TexCoord).r);
+	else
+		ao = 1.0f;
 	vec3 tangentNormal = texture(g_Normal, v_TexCoord).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(pos);
