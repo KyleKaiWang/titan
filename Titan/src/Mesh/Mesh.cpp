@@ -72,7 +72,7 @@ namespace Titan {
 
 	void Mesh::Init()
 	{
-		bool texcoord = false, normal = false;
+		bool texcoord = false, normal = false, tangent = false, bitangent = false;
 		std::vector<float> data;
 		for (int i = 0; i < m_Positions.size(); ++i)
 		{
@@ -80,12 +80,6 @@ namespace Titan {
 			data.push_back(m_Positions[i].y);
 			data.push_back(m_Positions[i].z);
 			
-			if (m_TexCoords.size() > 0)
-			{
-				texcoord = true;
-				data.push_back(m_TexCoords[i].x);
-				data.push_back(m_TexCoords[i].y);
-			}
 			if (m_Normals.size() > 0)
 			{
 				normal = true;
@@ -93,23 +87,46 @@ namespace Titan {
 				data.push_back(m_Normals[i].y);
 				data.push_back(m_Normals[i].z);
 			}
+			if (m_TexCoords.size() > 0)
+			{
+				texcoord = true;
+				data.push_back(m_TexCoords[i].x);
+				data.push_back(m_TexCoords[i].y);
+			}
+			//if (m_Tangents.size() > 0)
+			//{
+			//	tangent = true;
+			//	data.push_back(m_Tangents[i].x);
+			//	data.push_back(m_Tangents[i].y);
+			//	data.push_back(m_Tangents[i].z);
+			//}
+			//if (m_Bitangents.size() > 0)
+			//{
+			//	bitangent = true;
+			//	data.push_back(m_Bitangents[i].x);
+			//	data.push_back(m_Bitangents[i].y);
+			//	data.push_back(m_Bitangents[i].z);
+			//}
 		}
 
 		m_VertexArray = VertexArray::Create();
 		m_VertexBuffer = VertexBuffer::Create(&data[0], data.size() * sizeof(float));
 		
+		//if (texcoord && normal && tangent && bitangent)
+		//{
+		//	m_VertexBuffer->SetLayout({
+		//		{ ShaderDataType::Float3, "a_Position" },
+		//		{ ShaderDataType::Float3, "a_Normal" },
+		//		{ ShaderDataType::Float2, "a_TexCoord" },
+		//		{ ShaderDataType::Float3, "a_Tangent" },
+		//		{ ShaderDataType::Float3, "a_Bitangent" }
+		//	});
+		//}
 		if (texcoord && normal)
 		{
 			m_VertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-				{ ShaderDataType::Float3, "a_Normal" }
-			});
-		}
-		else if (texcoord)
-		{
-			m_VertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
 				{ ShaderDataType::Float2, "a_TexCoord" }
 			});
 		}
@@ -118,6 +135,13 @@ namespace Titan {
 			m_VertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" }
+			});
+		}
+		else if (texcoord)
+		{
+			m_VertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" }
 			});
 		}
 		else
@@ -147,11 +171,14 @@ namespace Titan {
 			m_Normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
 
 			if (mesh->HasTangentsAndBitangents()) {
-				m_Tangent.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
-				m_Bitangent.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
+				m_Tangents.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
+				m_Bitangents.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
 			}
-			if (mesh->HasTextureCoords(0)) {
+			if (mesh->mTextureCoords[0]) {
 				m_TexCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
+			}
+			else {
+				m_TexCoords.push_back(glm::vec2(0.0, 0.0));
 			}
 		}
 

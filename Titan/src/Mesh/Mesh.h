@@ -22,10 +22,10 @@ namespace Titan {
 		virtual void Init();
 
 		std::vector<glm::vec3> m_Positions;
-		std::vector<glm::vec2> m_TexCoords;
 		std::vector<glm::vec3> m_Normals;
-		std::vector<glm::vec3> m_Tangent;
-		std::vector<glm::vec3> m_Bitangent;
+		std::vector<glm::vec2> m_TexCoords;
+		std::vector<glm::vec3> m_Tangents;
+		std::vector<glm::vec3> m_Bitangents;
 
 		std::vector<uint32_t> m_Indices;
 		inline const std::shared_ptr<VertexArray>& GetMeshVertexArray() { return m_VertexArray; }
