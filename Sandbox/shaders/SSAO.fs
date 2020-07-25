@@ -26,7 +26,6 @@ void main(void)
 	vec3 gPos = texture(gPosition, v_TexCoord).rgb;
 	vec2 viewport_dim = vec2(screenWidth, screenHeight);
 	
-	//vec3 pos = texture(camera_positions, gl_FragCoord.xy / viewport_dim).xyz;
 	vec3 pos = vec3(u_ViewMatrix * vec4(gPos, 1.0));
 	vec3 normal;
 	vec3 camera_normals = vec3(u_ViewMatrix * texture(gNormal, gl_FragCoord.xy / viewport_dim));
@@ -49,7 +48,6 @@ void main(void)
 	// Comments in their code mention we can compute it from the projection mat, or hardcode in like 500
 	// and make the ball radius resolution dependent (as I've done currently)
 	const float screen_radius = -ball_radius * 3500 / pos.z;
-	//int max_mip = textureQueryLevels(camera_positions) - 1;
 	int max_mip = textureQueryLevels(gPosition) - 1;
 	float ao_value = 0;
 	for (int i = 0; i < n_samples; ++i){
@@ -77,6 +75,6 @@ void main(void)
     if (abs(dFdy(pos.z)) < 0.02) {
         ao_value -= dFdy(ao_value) * ((px.y & 1) - 0.5);
     }
-	color = vec4(vec2(ao_value, pos.z / FAR_PLANE), 1.0, 1.0);
-	//color = vec4(vec3(ao_value), 1.0f);
+	//color = vec4(vec2(ao_value, pos.z / FAR_PLANE), 1.0, 1.0);
+	color = vec4(ao_value, ao_value, ao_value, 1.0);
 }

@@ -32,8 +32,8 @@ namespace Titan {
 		uint32_t width = window.GetWidth();
 		uint32_t height = window.GetHeight();
 
-		SSAOShader = Shader::Create("shaders/SSAO.vs", "shaders/SSAO2.fs");
-		SSAOBlurShader = Shader::Create("shaders/SSAO.vs", "shaders/SSAOBlur2.fs");
+		SSAOShader = Shader::Create("shaders/SSAO.vs", "shaders/SSAO.fs");
+		SSAOBlurShader = Shader::Create("shaders/SSAO.vs", "shaders/BilateralFilter.fs");
 		
 		//SSAO
 		{
@@ -109,24 +109,31 @@ namespace Titan {
 		SSAOFBO->Unbind();
 	}
 
-	void RendererSSAO::RenderSSAOBlur()
+	void RendererSSAO::RenderSSAOBlur(Camera camera, std::shared_ptr<Texture2D>& depthTex, std::shared_ptr<Texture2D>& gNormal)
 	{
+		auto& window = Application::Get().GetWindow();
+		uint32_t width = window.GetWidth();
+		uint32_t height = window.GetHeight();
+		
+		//BilateralFilter
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SSAOBlurShader->Bind();
 		SSAOBlurFBO1->Bind();
-		g_SSAO->Bind();
-		SSAOBlurShader->SetInt2("axis", glm::ivec2(1, 0));
-		SSAOBlurShader->SetInt("filter_scale", SSAOParams.filter_scale);
-		SSAOBlurShader->SetFloat("edge_sharpness", SSAOParams.edge_sharpness);
+		g_SSAO->Bind(0);
+		depthTex->Bind(1);
+		gNormal->Bind(2);
+		SSAOBlurShader->SetFloat2("invDstSize", 1.0f / glm::vec2(width, height));
+		glm::mat4 proj = camera.GetProjectionMatrix();
+		SSAOBlurShader->SetFloat2("projParams", glm::vec2(proj[2][2], proj[3][2]));
+		
+		SSAOBlurShader->SetInt("axis", 0);
 		DeferredRendering::DrawQuad();
 		SSAOBlurFBO1->Unbind();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SSAOBlurFBO2->Bind();
+		SSAOBlurShader->SetInt("axis", 1);
 		g_SSAOBlur1->Bind(0);
-		SSAOBlurShader->SetInt2("axis", glm::ivec2(0, 1));
-		SSAOBlurShader->SetInt("filter_scale", SSAOParams.filter_scale);
-		SSAOBlurShader->SetFloat("edge_sharpness", SSAOParams.edge_sharpness);
 		DeferredRendering::DrawQuad();
 		SSAOBlurFBO2->Unbind();
 		SSAOBlurShader->Unbind();
@@ -149,11 +156,6 @@ namespace Titan {
 			ImGui::SliderFloat("Sigma", &SSAOParams.sigma, 0.1f, 20.f);
 			ImGui::SliderFloat("Kappa", &SSAOParams.kappa, 0.1f, 10.f);
 			ImGui::SliderFloat("beta", &SSAOParams.beta, 0.0f, 5.0f);
-		}
-
-		if (ImGui::CollapsingHeader("Filter Params")) {
-			ImGui::SliderInt("Filter Scale", &SSAOParams.filter_scale, 1, 10);
-			ImGui::SliderFloat("Edge Sharpness", &SSAOParams.edge_sharpness, 0.f, 10.f);
 		}
 
 		ImGui::EndChild();
