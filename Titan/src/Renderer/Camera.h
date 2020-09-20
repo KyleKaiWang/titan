@@ -41,6 +41,9 @@ namespace Titan{
 		void SetFront(glm::vec3& front) { m_Front = front; m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp)); m_Up = glm::normalize(glm::cross(m_Right, m_Front)); }
 		const glm::vec3& GetRight() const { return m_Right; }
 
+        const float GetNear() const { return m_NearClip; }
+        const float GetFar() const { return m_FarClip; }
+
     private:
         void UpdateViewMatrix() override;
         
