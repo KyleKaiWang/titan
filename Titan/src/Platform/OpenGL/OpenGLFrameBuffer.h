@@ -15,6 +15,8 @@ namespace Titan {
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
+		virtual void BlitTo(const Framebuffer& fbo, uint32_t mask) override;
+
 		virtual uint32_t GetFramebufferID() const override { return m_RendererID; }
 		virtual std::vector<std::shared_ptr<Texture2D>> GetColorAttachments() const override { return m_ColorAttachments; }
 		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index) const override;

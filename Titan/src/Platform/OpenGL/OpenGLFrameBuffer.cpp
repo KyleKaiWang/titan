@@ -62,6 +62,17 @@ namespace Titan {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	void OpenGLFramebuffer::BlitTo(const Framebuffer& fbo, uint32_t mask)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.GetFramebufferID());
+		if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT) {
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		}
+		glBlitFramebuffer(0, 0, m_FramebufferDesc.Width, m_FramebufferDesc.Height, 0, 0, m_FramebufferDesc.Width, m_FramebufferDesc.Height, mask, GL_NEAREST);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RendererID);
+	}
+
 	std::shared_ptr<Texture2D> OpenGLFramebuffer::GetColorAttachment(uint32_t index) const
 	{
 		if (index < m_ColorAttachments.size())

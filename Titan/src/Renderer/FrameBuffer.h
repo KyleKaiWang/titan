@@ -21,6 +21,7 @@ namespace Titan {
 		virtual ~Framebuffer() = default;
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
+		virtual void BlitTo(const Framebuffer& fbo, uint32_t mask) = 0;
 
 		virtual uint32_t GetFramebufferID() const = 0;
 		virtual std::vector<std::shared_ptr<Texture2D>> GetColorAttachments() const = 0;
