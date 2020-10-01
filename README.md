@@ -3,12 +3,15 @@
 
 ## Features
 * Deferred Shading
+* Clustered Forward Shading
 * Physically Based Rendering
 * BRDF Lighting
 * Image Based Lighting
 * Shadow Mapping
 * Ambient Occlusion
 * Particle System
+* Bloom
+* Depth of Field
 
 ## Prerequisites
 * Windows10 (x64 version)
