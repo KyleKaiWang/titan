@@ -32,6 +32,10 @@ namespace Titan {
 			glm::mat4 ViewProjectionMatrix;
 			glm::mat4 ProjectionMatrix;
 			glm::mat4 ViewMatrix;
+
+			glm::vec3 CameraPos;
+			float zNear;
+			float zFar;
 		};
 
 		static SceneData* s_SceneData;

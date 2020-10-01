@@ -44,6 +44,8 @@ namespace Titan{
         const float GetNear() const { return m_NearClip; }
         const float GetFar() const { return m_FarClip; }
 
+		float m_NearClip;
+		float m_FarClip;
     private:
         void UpdateViewMatrix() override;
         
@@ -55,8 +57,6 @@ namespace Titan{
 
 		float m_FOV;
 		float m_AspectRatio;
-		float m_NearClip;
-		float m_FarClip;
     };
 
     class OrthographicCamera : public Camera

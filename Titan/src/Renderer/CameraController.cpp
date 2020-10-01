@@ -48,7 +48,7 @@ namespace Titan {
 		}
 
 		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetPerspectiveMatrix(glm::radians(m_ZoomLevel), m_AspectRatio, 0.1f, 100.0f);
+		m_Camera.SetPerspectiveMatrix(glm::radians(m_ZoomLevel), m_AspectRatio, m_Camera.GetNear(), m_Camera.GetFar());
 	}
 	void CameraController::OnEvent(Event& e)
 	{
@@ -100,7 +100,7 @@ namespace Titan {
 	bool CameraController::OnWindowResized(WindowResizeEvent& e)
 	{
 		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-		m_Camera.SetPerspectiveMatrix(glm::radians(m_AspectRatio * m_ZoomLevel), m_AspectRatio, 0.1f, 100);
+		m_Camera.SetPerspectiveMatrix(glm::radians(m_AspectRatio * m_ZoomLevel), m_AspectRatio, m_Camera.GetNear(), m_Camera.GetFar());
 		return false;
 	}
 

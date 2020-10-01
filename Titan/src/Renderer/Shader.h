@@ -25,6 +25,7 @@ namespace Titan {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetBlock(const std::string& name, uint32_t value) = 0;
 
+		static Ref<Shader> Create(const std::string& vertexShaderPath, const std::string& geometryShaderPath, const std::string& fragmentShaderPath);
 		static Ref<Shader> Create(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 		static Ref<Shader> Create(const std::string& computeShaderPath);
 	};

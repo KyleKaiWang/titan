@@ -21,10 +21,13 @@ namespace Titan {
 	void Renderer::BeginScene(PerspectiveCamera& camera)
 	{
 		auto& window = Application::Get().GetWindow();
-		camera.SetPerspectiveMatrix(45.0f, (float)window.GetWidth() / (float)window.GetHeight(), 0.1f, 100.0f);
+		camera.SetPerspectiveMatrix(45.0f, (float)window.GetWidth() / (float)window.GetHeight(), camera.GetNear(), camera.GetFar());
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 		s_SceneData->ProjectionMatrix = camera.GetProjectionMatrix();
 		s_SceneData->ViewMatrix = camera.GetViewMatrix();
+		s_SceneData->CameraPos = camera.GetPosition();
+		s_SceneData->zNear = camera.GetNear();
+		s_SceneData->zFar = camera.GetFar();
 	}
 
 	void Renderer::EndScene()
@@ -65,7 +68,7 @@ namespace Titan {
 		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 
 		//Lighting
-		light.ShaderBinding(shader);
+		light.UniformBinding(shader);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
@@ -79,12 +82,15 @@ namespace Titan {
 		shader->SetMat4("u_ProjectionMatrix", s_SceneData->ProjectionMatrix);
 		shader->SetMat4("u_ViewMatrix", s_SceneData->ViewMatrix);
 		shader->SetMat4("u_Model", transform);
+		shader->SetFloat3("u_CameraPos", s_SceneData->CameraPos);
+		shader->SetFloat("zNear", s_SceneData->zNear);
+		shader->SetFloat("zFar", s_SceneData->zFar);
 
 		glm::mat4 mv = s_SceneData->ViewMatrix * transform;
 		shader->SetMat3("u_NormalMatrix", glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 
 		//Lighting
-		light.ShaderBinding(shader);
+		light.UniformBinding(shader);
 
 		//PBR Texture binding
 		mesh->GetMeshMaterial()->Bind(shader);

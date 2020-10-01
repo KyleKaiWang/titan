@@ -8,10 +8,12 @@ namespace Titan {
 	
 	struct TextureDesc
 	{
+		uint32_t Target;
 		uint32_t Width;
 		uint32_t Height;
-		uint32_t MipLevels;
+		uint32_t MipLevels = 0;
 		uint32_t Format;
+		uint32_t Samples = 0;
 		bool IsDepth = false;
 		std::vector<std::pair<uint32_t, uint32_t>> Parameters;
 	};
@@ -25,7 +27,9 @@ namespace Titan {
 		virtual uint32_t GetHeight() const  { return m_Height; }
 		virtual void Bind(uint32_t slot = 0) const = 0;
 		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void SetTextureID(uint32_t id) = 0;
 		virtual uint32_t GetTextureID() const = 0;
+		virtual std::string GetFilePath() const { return m_Path; };
 
 		bool isHDR() const { return m_HDR; }
 		int BytesPerPixel() const { return m_DataFormat * (m_HDR ? sizeof(float) : sizeof(unsigned char)); }
@@ -58,6 +62,7 @@ namespace Titan {
 		uint32_t m_Width, m_Height;
 		uint32_t m_InternalFormat, m_DataFormat;
 		std::unique_ptr<unsigned char> m_Pixels;
+		std::string m_Path;
 	};
 
 	class Texture2D : public Texture
@@ -72,6 +77,7 @@ namespace Titan {
 	{
 	public:
 		static Ref<TextureCube> Create(std::vector<std::string> facesPath);
+		static Ref<TextureCube> Create(uint32_t width, uint32_t height);
 		static Ref<TextureCube> Create(uint32_t width, uint32_t height, uint32_t internalFormat, int levels = 0);
 		inline int GetLevels() const { return m_Levels; }
 	protected:
