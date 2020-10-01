@@ -22,6 +22,7 @@
 #include "Renderer/RenderCommand.h"
 #include "Scene/Scene.h"
 #include "Renderer/DeferredRendering.h"
+#include "Renderer/ClusteredRenderer.h"
 #include "Renderer/Lighting.h"
 
 #include "Renderer/Buffer.h"
