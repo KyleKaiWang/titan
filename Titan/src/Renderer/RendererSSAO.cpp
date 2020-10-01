@@ -5,17 +5,11 @@
 #include "Camera.h"
 #include "FrameBuffer.h"
 #include "Application.h"
-#include "DeferredRendering.h"
 #include "../imgui/imgui.h"
 #include <glad/glad.h>
 #include <random>
 
-#define FBO_SIZE                2048
-
 namespace Titan {
-
-	SSAOParameters RendererSSAO::SSAOParams;
-
 	std::shared_ptr<Shader> SSAOShader;
 	std::shared_ptr<Shader> SSAOBlurShader;
 	std::shared_ptr<Framebuffer> SSAOFBO;
@@ -25,9 +19,18 @@ namespace Titan {
 	std::shared_ptr<Texture2D> g_SSAOBlur1;
 	std::shared_ptr<Texture2D> g_SSAOBlur2;
 
-	void RendererSSAO::Init()
+	RendererSSAO::RendererSSAO()
+	{
+		Init();
+	}
+
+	RendererSSAO::~RendererSSAO()
 	{
 
+	}
+
+	void RendererSSAO::Init()
+	{
 		auto& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth();
 		uint32_t height = window.GetHeight();
@@ -77,12 +80,12 @@ namespace Titan {
 			g_SSAOBlur2 = SSAOBlurFBO2->GetColorAttachment(0);
 		}
 
-		DeferredRendering::DebugTextures.push_back(g_SSAO);
-		DeferredRendering::DebugTextures.push_back(g_SSAOBlur1);
-		DeferredRendering::DebugTextures.push_back(g_SSAOBlur2);
+		//DeferredRendering::DebugTextures.push_back(g_SSAO);
+		//DeferredRendering::DebugTextures.push_back(g_SSAOBlur1);
+		//DeferredRendering::DebugTextures.push_back(g_SSAOBlur2);
 	}
 
-	void RendererSSAO::RenderSSAO(Camera camera, std::shared_ptr<Texture2D>& gPosition, std::shared_ptr<Texture2D>& gNormal)
+	void RendererSSAO::RenderSSAO(Camera camera, std::shared_ptr<Texture2D>& gPosition, std::shared_ptr<Texture2D>& gNormal, std::function<void()> drawQuad)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SSAOFBO->Bind();
@@ -103,13 +106,13 @@ namespace Titan {
 		gPosition->Bind(0);
 		gNormal->Bind(1);
 
-		DeferredRendering::DrawQuad();
+		drawQuad();
 
 		SSAOShader->Unbind();
 		SSAOFBO->Unbind();
 	}
 
-	void RendererSSAO::RenderSSAOBlur(Camera camera, std::shared_ptr<Texture2D>& depthTex, std::shared_ptr<Texture2D>& gNormal)
+	void RendererSSAO::RenderSSAOBlur(Camera camera, std::shared_ptr<Texture2D>& depthTex, std::shared_ptr<Texture2D>& gNormal, std::function<void()> drawQuad)
 	{
 		auto& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth();
@@ -127,14 +130,14 @@ namespace Titan {
 		SSAOBlurShader->SetFloat2("projParams", glm::vec2(proj[2][2], proj[3][2]));
 		
 		SSAOBlurShader->SetInt("axis", 0);
-		DeferredRendering::DrawQuad();
+		drawQuad();
 		SSAOBlurFBO1->Unbind();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SSAOBlurFBO2->Bind();
 		SSAOBlurShader->SetInt("axis", 1);
 		g_SSAOBlur1->Bind(0);
-		DeferredRendering::DrawQuad();
+		drawQuad();
 		SSAOBlurFBO2->Unbind();
 		SSAOBlurShader->Unbind();
 	}

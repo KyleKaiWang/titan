@@ -11,10 +11,10 @@ namespace Titan {
 		bool use_rendered_normals = false;
 		int n_samples = 64;
 		int turns = 64;
-		float ball_radius = 0.25;
-		float sigma = 0.5;
-		float kappa = 1.0;
-		float beta = 0.0001;
+		float ball_radius = 0.25f;
+		float sigma = 0.5f;
+		float kappa = 1.0f;
+		float beta = 0.0001f;
 
 		// Parameters for the blurring pass
 		int filter_scale = 2;
@@ -24,13 +24,15 @@ namespace Titan {
 	class RendererSSAO
 	{
 	public:
-		static void Init();
-		static void RenderSSAO(Camera camera, std::shared_ptr<Texture2D>& gPosition, std::shared_ptr<Texture2D>& gNormal);
-		static void RenderSSAOBlur(Camera camera, std::shared_ptr<Texture2D>& depthTex, std::shared_ptr<Texture2D>& gNormal);
-		static std::shared_ptr<Texture2D> GetSSAOTexture();
-		static SSAOParameters SSAOParams;
+		RendererSSAO();
+		~RendererSSAO();
+		void Init();
+		void RenderSSAO(Camera camera, std::shared_ptr<Texture2D>& gPosition, std::shared_ptr<Texture2D>& gNormal, std::function<void()> drawQuad);
+		void RenderSSAOBlur(Camera camera, std::shared_ptr<Texture2D>& depthTex, std::shared_ptr<Texture2D>& gNormal, std::function<void()> drawQuad);
+		std::shared_ptr<Texture2D> GetSSAOTexture();
+		SSAOParameters SSAOParams;
 
-		static void RenderDebug();
+		void RenderDebug();
 	};
 	
 }
