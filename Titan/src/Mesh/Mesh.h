@@ -5,9 +5,11 @@
 #include "Renderer/Buffer.h"
 #include "Renderer/Material.h"
 
-struct aiMesh;
-struct aiNode;
-struct aiScene;
+class aiMesh;
+class aiScene;
+class aiMaterial;
+class aiNode;
+enum aiTextureType;
 
 namespace Titan {
 
@@ -81,7 +83,10 @@ namespace Titan {
 	public:
 		Model(const std::string& filename);
 		std::vector<std::shared_ptr<Mesh>> Meshes;
+		std::vector<std::shared_ptr<Texture2D>> LoadTextures;
 
 		void ProcessNode(aiNode* node, const aiScene* scene);
+		std::shared_ptr<TriangleMesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
+		std::vector<std::shared_ptr<Texture2D>> LoadMaterialTextures(aiMaterial* mat, aiTextureType type);
 	};
 }

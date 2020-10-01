@@ -1,5 +1,6 @@
 #include "tpch.h"
 #include "Mesh.h"
+#include "Renderer/Texture.h"
 #include <glm/gtc/constants.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -40,18 +41,69 @@ namespace Titan {
 		// process each mesh located at the current node
 		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 		{
-			// the node object only contains indices to index the actual objects in the scene. 
-			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			std::shared_ptr<TriangleMesh> triMesh = std::make_shared<TriangleMesh>(mesh);
+			std::shared_ptr<TriangleMesh> triMesh = ProcessMesh(mesh, scene);
 			Meshes.push_back(triMesh);
 		}
 
-		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; ++i)
 		{
 			ProcessNode(node->mChildren[i], scene);
 		}
+	}
+
+	std::shared_ptr<TriangleMesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+	{
+		std::vector<std::shared_ptr<Texture2D>> textures;
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		std::vector<std::shared_ptr<Texture2D>> albedo = LoadMaterialTextures(material, aiTextureType_BASE_COLOR);
+		textures.insert(textures.end(), albedo.begin(), albedo.end());
+
+		std::vector<std::shared_ptr<Texture2D>> metalness = LoadMaterialTextures(material, aiTextureType_METALNESS);
+		textures.insert(textures.end(), metalness.begin(), metalness.end());
+
+		std::vector<std::shared_ptr<Texture2D>>  normal = LoadMaterialTextures(material, aiTextureType_NORMALS);
+		textures.insert(textures.end(), normal.begin(), normal.end());
+
+		std::vector<std::shared_ptr<Texture2D>> roughness = LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS);
+		textures.insert(textures.end(), roughness.begin(), roughness.end());
+		
+		std::shared_ptr<TriangleMesh> triMesh = std::make_shared<TriangleMesh>(mesh);
+		
+		PBRTextures pbrTexs{ albedo, metalness, normal, roughness };
+		std::shared_ptr<PBRMaterial> pbrMat = std::make_shared<PBRMaterial>(pbrTexs);
+		triMesh->SetMeshMaterial(pbrMat);
+		
+		return triMesh;
+	}
+
+	std::vector<std::shared_ptr<Texture2D>> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type)
+	{
+		std::vector<std::shared_ptr<Texture2D>> textures;
+		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+		{
+			aiString str;
+			mat->GetTexture(type, i, &str);
+			// check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+			bool skip = false;
+			for (unsigned int j = 0; j < LoadTextures.size(); j++)
+			{
+				if (std::strcmp(LoadTextures[j]->GetFilePath().data(), str.C_Str()) == 0)
+				{
+					textures.push_back(LoadTextures[j]);
+					skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
+					break;
+				}
+			}
+			if (!skip)
+			{   // if texture hasn't been loaded already, load it
+				std::shared_ptr<Texture2D> texture = Texture2D::Create(str.C_Str());
+				textures.push_back(texture);
+				LoadTextures.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+			}
+		}
+		return textures;
 	}
 
 	Mesh::Mesh()
@@ -72,7 +124,11 @@ namespace Titan {
 
 	void Mesh::Init()
 	{
-		bool texcoord = false, normal = false, tangent = false, bitangent = false;
+		bool normal, texcoord, tangent, bitangent;
+		if (m_Normals.size() > 0) normal = true;
+		if (m_TexCoords.size() > 0) texcoord = true;
+		if (m_Tangents.size() > 0) tangent = true;
+		if (m_Bitangents.size() > 0) bitangent = true;
 		std::vector<float> data;
 		for (int i = 0; i < m_Positions.size(); ++i)
 		{
@@ -80,49 +136,45 @@ namespace Titan {
 			data.push_back(m_Positions[i].y);
 			data.push_back(m_Positions[i].z);
 			
-			if (m_Normals.size() > 0)
+			if (normal)
 			{
-				normal = true;
 				data.push_back(m_Normals[i].x);
 				data.push_back(m_Normals[i].y);
 				data.push_back(m_Normals[i].z);
 			}
-			if (m_TexCoords.size() > 0)
+			if (texcoord)
 			{
-				texcoord = true;
 				data.push_back(m_TexCoords[i].x);
 				data.push_back(m_TexCoords[i].y);
 			}
-			//if (m_Tangents.size() > 0)
-			//{
-			//	tangent = true;
-			//	data.push_back(m_Tangents[i].x);
-			//	data.push_back(m_Tangents[i].y);
-			//	data.push_back(m_Tangents[i].z);
-			//}
-			//if (m_Bitangents.size() > 0)
-			//{
-			//	bitangent = true;
-			//	data.push_back(m_Bitangents[i].x);
-			//	data.push_back(m_Bitangents[i].y);
-			//	data.push_back(m_Bitangents[i].z);
-			//}
+			if (tangent)
+			{
+				data.push_back(m_Tangents[i].x);
+				data.push_back(m_Tangents[i].y);
+				data.push_back(m_Tangents[i].z);
+			}
+			if (bitangent)
+			{
+				data.push_back(m_Bitangents[i].x);
+				data.push_back(m_Bitangents[i].y);
+				data.push_back(m_Bitangents[i].z);
+			}
 		}
 
 		m_VertexArray = VertexArray::Create();
 		m_VertexBuffer = VertexBuffer::Create(&data[0], data.size() * sizeof(float));
 		
-		//if (texcoord && normal && tangent && bitangent)
-		//{
-		//	m_VertexBuffer->SetLayout({
-		//		{ ShaderDataType::Float3, "a_Position" },
-		//		{ ShaderDataType::Float3, "a_Normal" },
-		//		{ ShaderDataType::Float2, "a_TexCoord" },
-		//		{ ShaderDataType::Float3, "a_Tangent" },
-		//		{ ShaderDataType::Float3, "a_Bitangent" }
-		//	});
-		//}
-		if (texcoord && normal)
+		if (texcoord && normal && tangent && bitangent)
+		{
+			m_VertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Bitangent" }
+			});
+		}
+		else if (texcoord && normal)
 		{
 			m_VertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
@@ -174,7 +226,7 @@ namespace Titan {
 				m_Tangents.push_back(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
 				m_Bitangents.push_back(glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z));
 			}
-			if (mesh->mTextureCoords[0]) {
+			if (mesh->HasTextureCoords(0)) {
 				m_TexCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
 			}
 			else {
@@ -189,7 +241,7 @@ namespace Titan {
 				m_Indices.push_back(mesh->mFaces[i].mIndices[j]);
 		}
 
-		Mesh::Init();
+		Mesh::Init();		
 	}
 
 	Cube::Cube(float _size)

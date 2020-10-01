@@ -39,7 +39,11 @@ namespace Titan {
 
 	PBRMaterial::PBRMaterial()
 	{
-		m_PBR = std::make_shared<PBRTextures>();
+	}
+
+	PBRMaterial::PBRMaterial(PBRTextures pbrTextures)
+		: m_PBR(std::move(pbrTextures))
+	{
 	}
 
 	PBRMaterial::~PBRMaterial()
@@ -48,13 +52,16 @@ namespace Titan {
 
 	void PBRMaterial::Bind(const std::shared_ptr<Shader>& shader)
 	{
-		m_PBR->Albedo->Bind(0);
-		m_PBR->Normal->Bind(1);
-		m_PBR->Metallic->Bind(2);
-		m_PBR->Roughness->Bind(3);
-		shader->SetInt("u_Albedo", 0);
-		shader->SetInt("u_Normal", 1);
-		shader->SetInt("u_Metallic", 2);
-		shader->SetInt("u_Roughness", 3);
+		uint32_t i = 0;
+		for (auto tex : m_PBR.Albedo) tex->Bind(i++);
+		for (auto tex : m_PBR.Normal) tex->Bind(i++);
+		for (auto tex : m_PBR.Metallic) tex->Bind(i++);
+		for (auto tex : m_PBR.Roughness) tex->Bind(i++);
+
+		// TODO : make this part support array
+		shader->SetInt("g_Albedo", 0);
+		shader->SetInt("g_Normal", 1);
+		shader->SetInt("g_Metallic", 2);
+		shader->SetInt("g_Roughness", 3);
 	}
 }

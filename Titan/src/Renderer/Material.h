@@ -1,6 +1,5 @@
 #pragma once
 #include "Shader.h"
-#
 
 namespace Titan {
 
@@ -8,10 +7,10 @@ namespace Titan {
 
 	struct PBRTextures
 	{
-		std::shared_ptr<Texture2D> Albedo;
-		std::shared_ptr<Texture2D> Normal;
-		std::shared_ptr<Texture2D> Metallic;
-		std::shared_ptr<Texture2D> Roughness;
+		std::vector<std::shared_ptr<Texture2D>> Albedo;
+		std::vector<std::shared_ptr<Texture2D>> Normal;
+		std::vector<std::shared_ptr<Texture2D>> Metallic;
+		std::vector<std::shared_ptr<Texture2D>> Roughness;
 	};
 
 	struct PhongElements
@@ -35,14 +34,15 @@ namespace Titan {
 	{
 	public:
 		PBRMaterial();
+		PBRMaterial(PBRTextures pbrTextures);
 		~PBRMaterial();
 
 		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
-		inline std::shared_ptr<PBRTextures> GetPBRTextures() { return m_PBR; }
-		inline void SetPBRTextures(std::shared_ptr<PBRTextures> pbrTexs) { m_PBR = pbrTexs; }
+		inline PBRTextures GetPBRTextures() { return m_PBR; }
+		inline void SetPBRTextures(PBRTextures pbrTexs) { m_PBR = pbrTexs; }
 
 	private:
-		std::shared_ptr<PBRTextures> m_PBR;
+		PBRTextures m_PBR;
 	};
 
 	class PhongMaterial : public Material
