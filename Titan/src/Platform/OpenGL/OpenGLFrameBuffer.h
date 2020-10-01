@@ -15,12 +15,15 @@ namespace Titan {
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
-		virtual void BlitTo(const Framebuffer& fbo, uint32_t mask) override;
+		virtual void BlitTo(Framebuffer* fbo, uint32_t mask) override;
 
+		virtual void SetFramebufferID(uint32_t id) override { m_RendererID = id; }
 		virtual uint32_t GetFramebufferID() const override { return m_RendererID; }
 		virtual std::vector<std::shared_ptr<Texture2D>> GetColorAttachments() const override { return m_ColorAttachments; }
-		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index) const override;
+		virtual std::shared_ptr<Texture2D> GetColorAttachment(uint32_t index = 0) const override;
 		virtual std::shared_ptr<Texture2D> GetDepthAttachment() const override { return m_DepthAttachment; }
+		virtual void SetColorAttachment(uint32_t id, uint32_t index) override;
+		virtual void SetDepthAttachment(uint32_t id) override { m_DepthAttachment->SetTextureID(id); }
 		virtual const FramebufferDesc& GetFramebufferDesc() const override { return m_FramebufferDesc; }
 
 	private:

@@ -29,8 +29,8 @@ namespace Titan {
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-		: m_Path(path)
 	{
+		Texture::m_Path = path;
 		int width, height, channels;
 		//stbi_set_flip_vertically_on_load(1);
 		
@@ -108,16 +108,40 @@ namespace Titan {
 		m_Height = texDesc.Height;
 		m_DataFormat = texDesc.Format;
 		m_InternalFormat = texDesc.Format;
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, texDesc.Width, texDesc.Height);
 
-		if(texDesc.MipLevels != 0) 
-			glGenerateTextureMipmap(m_RendererID);
-		else  
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAX_LEVEL, 0);
+		if (texDesc.Target == GL_TEXTURE_2D_MULTISAMPLE)
+		{
+			glCreateTextures(texDesc.Target, 1, &m_RendererID);
+			//glTexImage2DMultisample(texDesc.Target, texDesc.Samples, texDesc.Format, m_Width, m_Height, GL_TRUE);
+			glTextureStorage2DMultisample(m_RendererID, texDesc.Samples, texDesc.Format, m_Width, m_Height, GL_TRUE);
+			int err = glGetError();
+			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		} 
+		else
+		{
+			glCreateTextures(texDesc.Target, 1, &m_RendererID);
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, texDesc.Width, texDesc.Height);
+			if(texDesc.MipLevels != 0) 
+				glGenerateTextureMipmap(m_RendererID);
+			else  
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAX_LEVEL, 0);
+
+			float borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			glTextureParameterfv(m_RendererID, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+			int err = glGetError();
+			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		}
 		
-		for (auto pair : texDesc.Parameters)
+		for (auto pair : texDesc.Parameters) {
 			glTextureParameteri(m_RendererID, pair.first, pair.second);
+			
+			int err = glGetError();
+			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		}
+
+		int err = glGetError();
+		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 	}
 	
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -139,8 +163,6 @@ namespace Titan {
 
 	OpenGLTextureCube::OpenGLTextureCube(std::vector<std::string> faces)
 	{
-		//glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
-		//glTextureStorage2D(m_RendererID, 1, GL_RGBA8, 2048, 2048);
 		glGenTextures(1, &m_RendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 		int width, height, channels;
@@ -152,7 +174,6 @@ namespace Titan {
 			stbi_uc* data = stbi_load(faces[i].c_str(), &width, &height, &channels, 0);
 			TITAN_CORE_ASSERT(data, "Failed to load image!");
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			//glTextureSubImage3D(m_RendererID, 0, 0, 0, i, width, height, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
 			
 			stbi_image_free(data);
 		}
@@ -169,6 +190,33 @@ namespace Titan {
 		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 	}
 
+	OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height)
+	{
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+			int err = glGetError();
+			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		for (unsigned int i = 0; i < 6; ++i) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_DEPTH_COMPONENT, width, height, 0,
+				GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		err = glGetError();
+		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+	}
+
 	OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height, uint32_t internalFormat, int levels)
 	{
 		m_Width = width;
@@ -181,7 +229,7 @@ namespace Titan {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_Levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
-		
+
 		int err = glGetError();
 		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 	}

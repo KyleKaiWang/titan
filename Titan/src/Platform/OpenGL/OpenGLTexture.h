@@ -14,9 +14,9 @@ namespace Titan {
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual uint32_t GetTextureID() const override { return m_RendererID; }
+		virtual void SetTextureID(uint32_t id) override { m_RendererID = id; }
 
 	private:
-		std::string m_Path;
 		uint32_t m_RendererID;
 	};
 
@@ -24,6 +24,7 @@ namespace Titan {
 	{
 	public:
 		OpenGLTextureCube(std::vector<std::string> faces);
+		OpenGLTextureCube(uint32_t width, uint32_t height);
 		OpenGLTextureCube(uint32_t width, uint32_t height, uint32_t internalFormat, int levels = 0);
 		virtual ~OpenGLTextureCube();
 
@@ -32,6 +33,7 @@ namespace Titan {
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual uint32_t GetTextureID() const override { return m_RendererID; }
+		virtual void SetTextureID(uint32_t id) override { m_RendererID = id; }
 		virtual void SetData(void* data, uint32_t size) override {}
 
 	private:

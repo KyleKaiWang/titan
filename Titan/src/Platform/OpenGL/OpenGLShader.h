@@ -8,6 +8,7 @@ namespace Titan {
 	class OpenGLShader : public Shader
 	{
 	public:
+		OpenGLShader(const std::string& vertexShaderPath, const std::string& geometryShaderPath, const std::string& fragmentShaderPath);
 		OpenGLShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 		OpenGLShader(const std::string& computeShaderPath);
 		virtual ~OpenGLShader();
