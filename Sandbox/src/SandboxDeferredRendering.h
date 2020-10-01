@@ -13,9 +13,11 @@ public:
 	virtual void OnImGuiRender() override; 
 	void OnEvent(Titan::Event& event) override;
 
+	void DrawSceneObjects(const std::shared_ptr<Titan::Shader>& shader);
+
 private:
 	Titan::CameraController m_CameraController;
-	Titan::Light m_Light;
+	Titan::DirectionalLight m_DirLight;
 	std::shared_ptr<Titan::Model> m_DrawModel;
 	std::shared_ptr<Titan::Model> m_DrawModel2;
 	std::shared_ptr<Titan::Mesh> m_DrawLight;
@@ -28,4 +30,6 @@ private:
 	std::vector<Titan::PointLight> m_PointLights;
 
 	std::shared_ptr<Titan::Framebuffer> m_FBO;
+
+	Titan::ClusteredRenderer m_ClusteredRenderer;
 };
