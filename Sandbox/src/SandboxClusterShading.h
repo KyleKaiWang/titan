@@ -1,11 +1,11 @@
 #pragma once
 #include "Titan.h"
 
-class SandboxDeferredRendering : public Titan::Layer
+class SandboxClusterShading : public Titan::Layer
 {
 public:
-	SandboxDeferredRendering();
-	virtual ~SandboxDeferredRendering() = default;
+	SandboxClusterShading();
+	virtual ~SandboxClusterShading() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;

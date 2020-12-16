@@ -73,7 +73,7 @@ vec3 sampleOffsetDirections[20] = vec3[]
    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 );
 
-vec3 colors[8] = vec3[](
+vec3 debugDepthColors[8] = vec3[](
    vec3(0, 0, 0),  vec3( 0,  0,  1), vec3( 0, 1, 0),  vec3(0, 1, 1),
    vec3(1, 0, 0),  vec3( 1,  0,  1), vec3( 1, 1, 0),  vec3(1, 1, 1)
 );
@@ -85,6 +85,61 @@ uniform float zNear;
 uniform bool b_IBL;
 uniform bool b_Slices;
 uniform vec3 u_CameraPos;
+
+vec3 turboColormap(float x)
+{
+    // show clipping
+    if(x < 0.0)
+        return vec3(0.0);
+    else if(x > 1.0)
+        return vec3(1.0);
+
+    const vec4 kRedVec4   = vec4(0.13572138, 4.61539260, -42.66032258, 132.13108234);
+    const vec4 kGreenVec4 = vec4(0.09140261, 2.19418839, 4.84296658, -14.18503333);
+    const vec4 kBlueVec4  = vec4(0.10667330, 12.64194608, -60.58204836, 110.36276771);
+    const vec2 kRedVec2   = vec2(-152.94239396, 59.28637943);
+    const vec2 kGreenVec2 = vec2(4.27729857, 2.82956604);
+    const vec2 kBlueVec2  = vec2(-89.90310912, 27.34824973);
+
+    x = clamp(x, 0.0, 1.0);
+    vec4 v4 = vec4(1.0, x, x * x, x * x * x);
+    vec2 v2 = v4.zw * v4.z;
+    return vec3(
+        dot(v4, kRedVec4)   + dot(v2, kRedVec2),
+        dot(v4, kGreenVec4) + dot(v2, kGreenVec2),
+        dot(v4, kBlueVec4)  + dot(v2, kBlueVec2)
+    );
+}
+
+float screen2EyeDepth(float depth, float near, float far)
+{
+	float ndc = 2.0 * depth - 1.0;
+	float eye = 2.0 * far * near / (far + near + ndc * (far - near));
+    return eye;
+}
+
+// cluster depth index from depth in screen coordinates (gl_FragCoord.z)
+uint getClusterZIndex(float screenDepth)
+{
+    float scale = float(tileSizes.z) / log(zFar / zNear);
+    float bias = -(float(tileSizes.z) * log(zNear) / log(zFar / zNear));
+	scale = 0;
+	bias = 0;
+    float eyeDepth = screen2EyeDepth(screenDepth, zNear, zFar);
+    uint zIndex = uint(max(log(eyeDepth) * scale + bias, 0.0));
+    return zIndex;
+}
+
+// cluster index from fragment position in window coordinates (gl_FragCoord)
+uint getClusterIndex(vec4 fragCoord)
+{
+    uint zIndex = getClusterZIndex(fragCoord.z);
+    uvec3 indices = uvec3(uvec2(fragCoord.xy / tileSizes.xy), zIndex);
+    uint cluster = (tileSizes.x * tileSizes.y) * indices.z +
+                   tileSizes.x * indices.y +
+                   indices.x;
+    return cluster;
+}
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -194,12 +249,6 @@ vec3 CalcPointLight(uint index, vec3 normal, vec3 fragPos,
     return radiance;
 }
 
-float linearDepth(float depthSample){
-    float depthRange = 2.0 * depthSample - 1.0;
-    float linear = 2.0 * zNear * zFar / (zFar + zNear - depthRange * (zFar - zNear));
-    return linear;
-}
-
 float CalcDirShadow(vec4 fragPosLightSpace)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -263,7 +312,7 @@ void main()
 	vec3 F0 = Fdielectric; 
     F0 = mix(F0, albedo, metallic);
 
-    uint zTile     = uint(max(log2(linearDepth(gl_FragCoord.z)) * scale + bias, 0));
+    uint zTile     = uint(max(log2(screen2EyeDepth(gl_FragCoord.z, zNear, zFar)) * scale + bias, 0));
     uvec3 tiles    = uvec3( uvec2( gl_FragCoord.xy / tileSizes[3] ), zTile);
     uint tileIndex = tiles.x +
                      tileSizes.x * tiles.y +
@@ -281,8 +330,8 @@ void main()
     //uint lightIndexOffset = lightGrid[tileIndex].offset;
 	
     //for(uint i = 0; i < lightCount; i++){
-    //    uint bigAssLightVectorIndex = globalLightIndexList[lightIndexOffset + i];
-    //    radianceOut += CalcPointLight(bigAssLightVectorIndex, N, v_FragPos_WS, V, albedo, roughness, metallic, F0, viewDistance);
+    //    uint lightVectorIndex = globalLightIndexList[lightIndexOffset + i];
+    //    radianceOut += CalcPointLight(lightVectorIndex, N, v_FragPos_WS, V, albedo, roughness, metallic, F0, viewDistance);
     //}
 	
 	vec3 ambient = vec3(0.025)* albedo;
@@ -303,8 +352,25 @@ void main()
 		ambient = (kD * diffuse + specular);
 	}
 	radianceOut += ambient;
+	
+	// Debugging lighting overhead 
+	//if(b_debug_cluster_light){
+	//	uint cluster = getClusterIndex(gl_FragCoord);
+	//	LightGrid grid = lightGrids[cluster];
+	//	int lights = int(grid.count);
+	//	
+	//	// show possible clipping
+	//	if(lights == 0)
+	//		lights--;
+	//	else if(lights < MAX_LIGHTS_PER_CLUSTER)
+	//		lights++;
+	//
+	//	vec3 lightCountColor = turboColormap(float(lights) / MAX_LIGHTS_PER_CLUSTER);
+	//	FragColor = vec4(lightCountColor, 1.0);
+    //}
+	
 	if(b_Slices){
-        color = vec4(colors[uint(zTile % 8)], 1.0);
+        color = vec4(debugDepthColors[uint(zTile % 8)], 1.0);
     }
     else{
         color = vec4(radianceOut, 1.0);
