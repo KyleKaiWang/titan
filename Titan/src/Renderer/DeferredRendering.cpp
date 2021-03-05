@@ -13,6 +13,8 @@ namespace Titan {
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::GBufferTextures;
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::DebugTextures;
 	RendererSSAO DeferredRendering::Renderer_SSAO;
+	PostProcessBloom DeferredRendering::Renderer_Bloom;
+	PostProcessTonemap DeferredRendering::Renderer_Tonemap;
 
 	struct DeferredRenderingStorage
 	{
@@ -83,11 +85,10 @@ namespace Titan {
 		auto& window = Application::Get().GetWindow();
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
 
-		//Rendering features initialization
+		// Rendering features initialization
 		Renderer_SSAO.Init();
-		DOF::Init();
-		//PostProcessBloom::Init();
-		//PostProcessTonemap::Init();
+		Renderer_Bloom.Init();
+		Renderer_Tonemap.Init();
 	}
 
 	void DeferredRendering::SetFrameBuffer(uint32_t width, uint32_t height)
@@ -481,11 +482,10 @@ namespace Titan {
 		s_DeferredData->SkyboxShader->Unbind();
 	}
 
-	void DeferredRendering::PostProcessPass()
+	void DeferredRendering::PostProcessPass_Bloom()
 	{
-		//PostProcessBloom::Render(s_DeferredData->g_EmissiveColor);
-		//DOF::Render(s_DeferredData->OutputTex, s_DeferredData->OutputTex_Depth);
-		//PostProcessTonemap::Render(s_DeferredData->OutputTex, PostProcessBloom::GetGaussianBlurTex());
+		Renderer_Bloom.Render(s_DeferredData->g_EmissiveColor);
+		Renderer_Tonemap.Render(s_DeferredData->OutputTex, Renderer_Bloom.GetGaussianBlurTex());
 	}
 
 	const std::shared_ptr<Shader>& DeferredRendering::GetGeometryShader()

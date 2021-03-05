@@ -25,9 +25,11 @@ namespace Titan {
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
 		static void BeginSkyboxPass();
 		static void EndSkyboxPass();
-		static void PostProcessPass();
+		static void PostProcessPass_Bloom();
 
 		static RendererSSAO Renderer_SSAO;
+		static PostProcessBloom Renderer_Bloom;
+		static PostProcessTonemap Renderer_Tonemap;
 
 		// Shaders
 		static const std::shared_ptr<Shader>& GetGeometryShader();

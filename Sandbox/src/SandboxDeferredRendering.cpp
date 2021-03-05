@@ -3,8 +3,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-bool EnableSkybox = false;
 bool EnableSSAO = true;
+bool EnableSkybox = false;
+bool EnableBloom = false;
 
 SandboxDeferredRendering::SandboxDeferredRendering()
 	: Layer("SandboxDeferredRendering"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 1000.0f)
@@ -53,23 +54,28 @@ void SandboxDeferredRendering::OnUpdate(Titan::Timestep ts)
 	using std::placeholders::_1;
 	std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObj = std::bind(&SandboxDeferredRendering::DrawSceneObjects, this, _1);
 
-	//Geometry Pass
+	// Geometry Pass
 	Titan::DeferredRendering::GeometryPass(drawObj);
 
-	//SSAO Pass
+	// SSAO Pass
 	if (EnableSSAO) {
 		Titan::DeferredRendering::SSAOPass(m_CameraController.GetCamera());
 	}
 
-	//Lighting Pass
+	// Lighting Pass
 	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_DirLight);
 
-	//Draw Skybox
+	// Draw Skybox
 	if (EnableSkybox) {
 		Titan::DeferredRendering::BeginSkyboxPass();
 		Titan::Renderer::Submit(Titan::DeferredRendering::GetSkyboxShader(), m_DrawSkybox->GetMeshVertexArray());
 		Titan::DeferredRendering::EndSkyboxPass();
 	}
+
+	// PostProcessing Pass
+	if(EnableBloom)
+		Titan::DeferredRendering::PostProcessPass_Bloom();
+
 }
 
 void SandboxDeferredRendering::OnImGuiRender()
