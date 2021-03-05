@@ -34,8 +34,8 @@ namespace Titan {
 		uint32_t width = window.GetWidth();
 		uint32_t height = window.GetHeight();
 
-		SSAOShader = Shader::Create("shaders/SSAO.vs", "shaders/SSAO.fs");
-		SSAOBlurShader = Shader::Create("shaders/SSAO.vs", "shaders/BilateralFilter.fs");
+		SSAOShader = Shader::Create("shaders/DrawQuad.vs", "shaders/SSAO.fs");
+		SSAOBlurShader = Shader::Create("shaders/DrawQuad.vs", "shaders/BilateralFilter.fs");
 		
 		// SSAO
 		{
