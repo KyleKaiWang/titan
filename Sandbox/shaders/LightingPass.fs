@@ -124,5 +124,6 @@ void main()
 	
 	vec3 result = CalcDirLight(pos, worldNormal, ambient, diffuse, specular, 1.0f);
     
+	result = pow(result, vec3(1.0/2.2));
     color = vec4(result, 1.0f);
 }

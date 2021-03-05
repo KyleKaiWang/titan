@@ -8,6 +8,7 @@ const int NumLights = 4;
 const vec3 Fdielectric = vec3(0.04);
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 emmisiveColor;
 
 in vec2 v_TexCoord;
 
@@ -25,7 +26,7 @@ uniform vec3 u_LightPos[NumLights];
 uniform vec3 u_LightDir;
 uniform vec3 u_LightDiffuse;
 uniform vec3 u_ViewPos;
-uniform int u_EnableSSAO = 1;
+uniform bool u_EnableSSAO = true;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -80,7 +81,7 @@ void main()
     vec3 albedo = texture(g_Albedo, v_TexCoord).rgb;
 	//vec3 normal = texture(g_Normal, v_TexCoord).rgb;
 	float ao = 0.0;
-	if(u_EnableSSAO == 1)
+	if(u_EnableSSAO)
 		ao = min(1.0f, texture(g_SSAO, v_TexCoord).r);
 	else
 		ao = 1.0f;
@@ -156,7 +157,7 @@ void main()
     kD *= 1.0 - metallic;	  
     
     vec3 irradiance = texture(g_IrradianceTexture, N).rgb;
-    vec3 diffuse      = irradiance * albedo;
+    vec3 diffuse = irradiance * albedo;
     
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 10.0;
@@ -166,12 +167,19 @@ void main()
     
 	vec3 ambient = (kD * diffuse + specular);
     vec3 col = (ambient + Lo) * ao;
-
+	
+	float brightness = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        emmisiveColor = vec4(col, 1.0);
+    else
+        emmisiveColor = vec4(0.0, 0.0, 0.0, 1.0);
+	
     // HDR tonemapping
-    col = col / (col + vec3(1.0));
+    //col = col / (col + vec3(1.0));
 	
     // gamma correct
-    col = pow(col, vec3(1.0/2.2)); 
+    //col = pow(col, vec3(1.0/2.2)); 
 	
     color = vec4(col , 1.0f);
+	//color = vec4(vec3(ao), 1.0f);
 }
