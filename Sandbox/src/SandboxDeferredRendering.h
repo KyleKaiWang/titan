@@ -31,5 +31,5 @@ private:
 
 	std::shared_ptr<Titan::Framebuffer> m_FBO;
 
-	Titan::ClusteredFowardRenderer m_ClusteredRenderer;
+	Titan::DeferredRendering m_DeferredRenderingPass;
 };

@@ -3,6 +3,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+bool EnableSkybox = false;
+bool EnableSSAO = true;
+
 SandboxDeferredRendering::SandboxDeferredRendering()
 	: Layer("SandboxDeferredRendering"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 1000.0f)
 {
@@ -13,11 +16,7 @@ void SandboxDeferredRendering::OnAttach()
 	m_DrawModel = std::make_shared<Titan::Model>("assets/meshes/sponza_crytek/sponza.obj");
 	m_DrawModel2 = std::make_shared<Titan::Model>("assets/meshes/bunny.obj");
 
-	m_ClusteredRenderer.Init(m_CameraController.GetCamera(), m_PointLights);
-
-	using std::placeholders::_1;
-	std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObj = std::bind(&SandboxDeferredRendering::DrawSceneObjects, this, _1);
-	m_ClusteredRenderer.PointLightPass(m_PointLights, drawObj);
+	m_DeferredRenderingPass.Init();
 }
 
 void SandboxDeferredRendering::OnDetach()
@@ -53,23 +52,24 @@ void SandboxDeferredRendering::OnUpdate(Titan::Timestep ts)
 
 	using std::placeholders::_1;
 	std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObj = std::bind(&SandboxDeferredRendering::DrawSceneObjects, this, _1);
-	
-	// Directional Shadow
-	m_ClusteredRenderer.DirectionalLightPass(m_DirLight, drawObj);
 
-	// PreDepthPass
-	m_ClusteredRenderer.MultisampledDepthPrePass(drawObj);
+	//Geometry Pass
+	Titan::DeferredRendering::GeometryPass(drawObj);
 
-	// Light Calling
-	m_ClusteredRenderer.LightCullingPass(m_CameraController.GetCamera());
+	//SSAO Pass
+	if (EnableSSAO) {
+		Titan::DeferredRendering::SSAOPass(m_CameraController.GetCamera());
+	}
 
-	// Scene
-	m_ClusteredRenderer.Render(drawObj);
+	//Lighting Pass
+	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_DirLight);
 
-	//m_ClusteredRenderer.BlitPass();
-
-	// Post Processing
-	m_ClusteredRenderer.PostProcessPass();
+	//Draw Skybox
+	if (EnableSkybox) {
+		Titan::DeferredRendering::BeginSkyboxPass();
+		Titan::Renderer::Submit(Titan::DeferredRendering::GetSkyboxShader(), m_DrawSkybox->GetMeshVertexArray());
+		Titan::DeferredRendering::EndSkyboxPass();
+	}
 }
 
 void SandboxDeferredRendering::OnImGuiRender()
@@ -86,14 +86,13 @@ void SandboxDeferredRendering::OnImGuiRender()
 
 	ImGui::DragFloat3("Light Position", glm::value_ptr(m_DirLight.Position));
 	ImGui::ColorEdit3("Light Color", glm::value_ptr(m_DirLight.Ambient));
-	ImGui::DragFloat("Orthographic Left", &m_DirLight.orthoLeft);
-	ImGui::DragFloat("Orthographic Right", &m_DirLight.orthoRight);
-	ImGui::DragFloat("Orthographic Bottom", &m_DirLight.orthoButtom);
-	ImGui::DragFloat("Orthographic Top", &m_DirLight.orthoTop);
-	ImGui::DragFloat("zNear", &m_DirLight.zNear);
-	ImGui::DragFloat("zFar", &m_DirLight.zFar);
+	ImGui::DragFloat("Light Orthographic Left", &m_DirLight.orthoLeft);
+	ImGui::DragFloat("Light Orthographic Right", &m_DirLight.orthoRight);
+	ImGui::DragFloat("Light Orthographic Bottom", &m_DirLight.orthoButtom);
+	ImGui::DragFloat("Light Orthographic Top", &m_DirLight.orthoTop);
+	ImGui::DragFloat("Light zNear", &m_DirLight.zNear);
+	ImGui::DragFloat("Light zFar", &m_DirLight.zFar);
 	ImGui::NewLine();
-	m_ClusteredRenderer.RenderDebug();
 	ImGui::End();
 
 	auto& window = Titan::Application::Get().GetWindow();
@@ -102,8 +101,8 @@ void SandboxDeferredRendering::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(x, y));
 	ImGui::Begin("GBuffer", 0, ImGuiWindowFlags_NoCollapse);
 	
-	for(int i = 0; i < m_ClusteredRenderer.GetGBufferTextures().size(); ++i) {
-		ImGui::Image((void*)m_ClusteredRenderer.GetGBufferTextures()[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
+	for(int i = 0; i < Titan::DeferredRendering::DebugTextures.size(); ++i) {
+		ImGui::Image((void*)Titan::DeferredRendering::DebugTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();
 	}
 	ImGui::End();

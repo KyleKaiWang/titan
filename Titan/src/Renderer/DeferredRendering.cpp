@@ -6,12 +6,13 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define IBL_ENABLE 1
+
 namespace Titan {
 
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::GBufferTextures;
 	std::vector<std::shared_ptr<Texture>> DeferredRendering::DebugTextures;
-
-	bool DeferredRendering::EnableAO = false;
+	RendererSSAO DeferredRendering::Renderer_SSAO;
 
 	struct DeferredRenderingStorage
 	{
@@ -34,6 +35,7 @@ namespace Titan {
 		std::shared_ptr<Texture2D> g_Albedo;
 		std::shared_ptr<Texture2D> g_Normal;
 		std::shared_ptr<Texture2D> g_MetallicRoughness;
+		std::shared_ptr<Texture2D> g_EmissiveColor;
 		std::shared_ptr<Texture2D> g_ShadowMap;
 		std::vector<std::shared_ptr<Texture2D>> g_BlurShadowMaps;
 
@@ -46,6 +48,9 @@ namespace Titan {
 		std::shared_ptr<TextureCube> EnvTexture;
 		std::shared_ptr<TextureCube> IrradianceTexture;
 		std::shared_ptr<Texture2D> BRDFLUTTexture;
+
+		std::shared_ptr<Texture2D> hdrSource;
+		std::shared_ptr<Texture2D> irr_sh;
 	};
 
 	static DeferredRenderingStorage* s_DeferredData;
@@ -79,7 +84,10 @@ namespace Titan {
 		SetFrameBuffer(window.GetWidth(), window.GetHeight());
 
 		//Rendering features initialization
-		RendererSSAO::Init();
+		Renderer_SSAO.Init();
+		DOF::Init();
+		//PostProcessBloom::Init();
+		//PostProcessTonemap::Init();
 	}
 
 	void DeferredRendering::SetFrameBuffer(uint32_t width, uint32_t height)
@@ -170,6 +178,8 @@ namespace Titan {
 		//	GBufferTextures.push_back(s_DeferredData->g_BlurShadowMaps[1]);
 		//}
 
+#if IBL_ENABLE
+
 		// Load & convert equirectangular environment map to a cubemap texture
 		uint32_t tsize = 1024;
 		std::shared_ptr<TextureCube> envTexUnfiltered = TextureCube::Create(tsize, tsize, GL_RGBA16F);
@@ -210,6 +220,21 @@ namespace Titan {
 			GBufferTextures.push_back(s_DeferredData->EnvTexture);
 		}
 
+		// Spherical Harmonic 
+		//{
+		//	std::shared_ptr<Shader> hdrSHShader = Shader::Create("shaders/SphericalMap.comp");
+		//	s_DeferredData->irr_sh = Texture2D::Create(400, 200);
+		//
+		//	hdrSHShader->Bind();
+		//	s_DeferredData->EnvTexture->Bind();
+		//	glBindImageTexture(1, s_DeferredData->irr_sh->GetTextureID(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+		//	glDispatchCompute(s_DeferredData->irr_sh->GetWidth(), 1, 1);
+		//	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		//	DebugTextures.push_back(s_DeferredData->irr_sh);
+		//	auto err = glGetError();
+		//	TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		//}
+
 		// Compute diffuse irradiance cubemap.
 		{
 			std::shared_ptr<Shader> IrradianceMapShader = Shader::Create("shaders/IrradianceMap.comp");
@@ -242,6 +267,8 @@ namespace Titan {
 			GBufferTextures.push_back(s_DeferredData->BRDFLUTTexture);
 		}
 
+#endif // IBL_ENABLE
+
 		//Final Output
 		{
 			TextureDesc texDesc;
@@ -255,14 +282,14 @@ namespace Titan {
 			FramebufferDesc desc;
 			desc.Width = width;
 			desc.Height = height;
-			desc.nrColorAttachment = 1;
-			desc.Depth = true;
+			desc.nrColorAttachment = 2;
+			desc.Depth = false;
 			desc.TexDesc = texDesc;
 			s_DeferredData->OutputFBO = Framebuffer::Create(desc);
 			s_DeferredData->OutputTex = s_DeferredData->OutputFBO->GetColorAttachment(0);
-			//s_DeferredData->OutputTex_Depth = s_DeferredData->OutputFBO->GetDepthAttachment();
+			s_DeferredData->g_EmissiveColor = s_DeferredData->OutputFBO->GetColorAttachment(1);
 			DebugTextures.push_back(s_DeferredData->OutputTex);
-			//DebugTextures.push_back(s_DeferredData->OutputTex_Depth);
+			DebugTextures.push_back(s_DeferredData->g_EmissiveColor);
 		}
 	}
 
@@ -273,7 +300,7 @@ namespace Titan {
 		s_DeferredData->VertexArray->Unbind();
 	}
 
-	void DeferredRendering::BeginGeometryPass()
+	void DeferredRendering::GeometryPass(std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObject)
 	{
 		s_DeferredData->GBufferFBO->Bind();
 		
@@ -285,14 +312,13 @@ namespace Titan {
 
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
 
-	void DeferredRendering::EndGeometryPass()
-	{
+		drawObject(DeferredRendering::GetGeometryShader());
+
 		s_DeferredData->GBufferFBO->Unbind();
 	}
 
-	void DeferredRendering::BeginShadowPass()
+	void DeferredRendering::ShadowPass(std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObject)
 	{
 		s_DeferredData->ShadowMapFBO->Bind();
 		glViewport(0, 0, s_DeferredData->ShadowMapFBO->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
@@ -300,15 +326,14 @@ namespace Titan {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT);
-	}
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
-	void DeferredRendering::EndShadowPass()
-	{
+		drawObject(DeferredRendering::GetGeometryShader());
+
 		s_DeferredData->ShadowMapFBO->Unbind();
-		//glDisable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glDisable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
@@ -320,7 +345,6 @@ namespace Titan {
 
 		// --------------------Pixel Shader----------------------
 		s_DeferredData->BlurShadowMapShader->Bind();
-		s_DeferredData->VertexArray->Bind();
 		
 		//Horizen Pass
 		s_DeferredData->BlurShadowMapFBOs[0]->Bind();
@@ -352,39 +376,45 @@ namespace Titan {
 
 	void DeferredRendering::SSAOPass(PerspectiveCamera& camera)
 	{
-		RendererSSAO::RenderSSAO(camera, s_DeferredData->g_Posistion, s_DeferredData->g_Normal);
-		RendererSSAO::RenderSSAOBlur();
+		std::function<void()> drawQuad = []() { DrawQuad(); };
+
+		Renderer_SSAO.RenderSSAO(camera, s_DeferredData->g_Posistion, s_DeferredData->g_Normal, drawQuad);
+		Renderer_SSAO.RenderSSAOBlur(camera, s_DeferredData->OutputTex_Depth, s_DeferredData->g_Normal, drawQuad);
 	}
 
-	//G-Buffers breakdown
-	//slot 0 : g_Posistion
-	//slot 1 : g_WorldNormal
-	//slot 2 : g_Albedo
-	//slot 3 : g_Normal
-	//slot 4 : g_MetallicRoughness
-	//slot 5 : g_SpecularTexture;
-	//slot 6 : g_IrradianceTexture
-	//slot 7 : g_SpecularBRDF_LUT;
-	//slot 8 : g_SSAO;
+	// G-Buffers breakdown
+	// slot 0 : g_Posistion
+	// slot 1 : g_WorldNormal
+	// slot 2 : g_Albedo
+	// slot 3 : g_Normal
+	// slot 4 : g_MetallicRoughness
+	// slot 5 : g_SpecularTexture;
+	// slot 6 : g_IrradianceTexture
+	// slot 7 : g_SpecularBRDF_LUT;
+	// slot 8 : g_SSAO;
 
-	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, Light& light)
+	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, Light& light, bool enableSSAO)
 	{
+		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		glNamedFramebufferDrawBuffers(s_DeferredData->OutputFBO->GetFramebufferID(), 2, &attachments[0]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
-		//s_DeferredData->OutputFBO->Bind();
+		s_DeferredData->OutputFBO->Bind();
 		s_DeferredData->LightingShader->Bind();
-		light.ShaderBinding(s_DeferredData->LightingShader);
+		light.UniformBinding(s_DeferredData->LightingShader);
 		s_DeferredData->LightingShader->SetFloat3("u_ViewPos", camera.GetPosition());
+		s_DeferredData->LightingShader->SetInt("u_EnableSSAO", enableSSAO);
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i);
 		}
 
 		//SSAO binding
-		RendererSSAO::GetSSAOTexture()->Bind(8);
+		if(enableSSAO)
+			Renderer_SSAO.GetSSAOTexture()->Bind(8);
 		
 		DrawQuad();
 		s_DeferredData->LightingShader->Unbind();
-		//s_DeferredData->OutputFBO->Unbind();
+		s_DeferredData->OutputFBO->Unbind();
 	}
 
 	void DeferredRendering::PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights)
@@ -422,7 +452,7 @@ namespace Titan {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		s_DeferredData->LightingShader->Bind();
-		light.ShaderBinding(s_DeferredData->LightingShader);
+		light.UniformBinding(s_DeferredData->LightingShader);
 		s_DeferredData->LightingShader->SetFloat3("u_ViewPos", camera.GetPosition());
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
 			GBufferTextures[i]->Bind(i);
@@ -449,6 +479,13 @@ namespace Titan {
 	void DeferredRendering::EndSkyboxPass()
 	{
 		s_DeferredData->SkyboxShader->Unbind();
+	}
+
+	void DeferredRendering::PostProcessPass()
+	{
+		//PostProcessBloom::Render(s_DeferredData->g_EmissiveColor);
+		//DOF::Render(s_DeferredData->OutputTex, s_DeferredData->OutputTex_Depth);
+		//PostProcessTonemap::Render(s_DeferredData->OutputTex, PostProcessBloom::GetGaussianBlurTex());
 	}
 
 	const std::shared_ptr<Shader>& DeferredRendering::GetGeometryShader()

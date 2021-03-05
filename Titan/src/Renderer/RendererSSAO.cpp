@@ -21,7 +21,6 @@ namespace Titan {
 
 	RendererSSAO::RendererSSAO()
 	{
-		Init();
 	}
 
 	RendererSSAO::~RendererSSAO()
@@ -38,7 +37,7 @@ namespace Titan {
 		SSAOShader = Shader::Create("shaders/SSAO.vs", "shaders/SSAO.fs");
 		SSAOBlurShader = Shader::Create("shaders/SSAO.vs", "shaders/BilateralFilter.fs");
 		
-		//SSAO
+		// SSAO
 		{
 			TextureDesc texDesc;
 			texDesc.Width = width;
@@ -58,7 +57,7 @@ namespace Titan {
 			g_SSAO = SSAOFBO->GetColorAttachment(0);
 		}
 
-		//SSAO Blur
+		// SSAO Blur
 		{
 			TextureDesc texDesc;
 			texDesc.Width = width;
@@ -79,10 +78,6 @@ namespace Titan {
 			SSAOBlurFBO2 = Framebuffer::Create(desc);
 			g_SSAOBlur2 = SSAOBlurFBO2->GetColorAttachment(0);
 		}
-
-		//DeferredRendering::DebugTextures.push_back(g_SSAO);
-		//DeferredRendering::DebugTextures.push_back(g_SSAOBlur1);
-		//DeferredRendering::DebugTextures.push_back(g_SSAOBlur2);
 	}
 
 	void RendererSSAO::RenderSSAO(Camera camera, std::shared_ptr<Texture2D>& gPosition, std::shared_ptr<Texture2D>& gNormal, std::function<void()> drawQuad)
@@ -103,6 +98,10 @@ namespace Titan {
 		SSAOShader->SetFloat("sigma", SSAOParams.sigma);
 		SSAOShader->SetFloat("kappa", SSAOParams.kappa);
 		SSAOShader->SetFloat("beta", SSAOParams.beta);
+
+		// G-Buffer
+		// slot 0 : g_Posistion
+		// slot 1 : g_WorldNormal
 		gPosition->Bind(0);
 		gNormal->Bind(1);
 
@@ -118,7 +117,7 @@ namespace Titan {
 		uint32_t width = window.GetWidth();
 		uint32_t height = window.GetHeight();
 		
-		//BilateralFilter
+		// BilateralFilter
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SSAOBlurShader->Bind();
 		SSAOBlurFBO1->Bind();

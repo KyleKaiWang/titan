@@ -1,4 +1,4 @@
-#include "SandboxClusterShading.h"
+#include "SandboxDeferredRendering.h"
 #include "EntryPoint.h"
 
 class Sandbox : public Titan::Application
@@ -6,7 +6,7 @@ class Sandbox : public Titan::Application
 public:
     Sandbox()
     {
-        PushLayer(new SandboxClusterShading());
+        PushLayer(new SandboxDeferredRendering());
     }
     
     ~Sandbox()
