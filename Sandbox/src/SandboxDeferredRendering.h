@@ -27,7 +27,7 @@ private:
 	std::shared_ptr<Titan::Mesh> m_DrawPlane;
 	std::shared_ptr<Titan::Mesh> m_DrawSkybox;
 
-	std::vector<std::shared_ptr<Titan::PBRMaterial>> m_PBRMats;
+	std::shared_ptr<Titan::PBRMaterial> m_PBRMat;
 
 	std::shared_ptr<Titan::Framebuffer> m_FBO;
 

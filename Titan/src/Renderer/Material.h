@@ -34,15 +34,15 @@ namespace Titan {
 	{
 	public:
 		PBRMaterial();
-		PBRMaterial(PBRTextures pbrTextures);
+		PBRMaterial(std::shared_ptr<PBRTextures> pbrTextures);
 		~PBRMaterial();
 
 		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
-		inline PBRTextures GetPBRTextures() { return m_PBR; }
-		inline void SetPBRTextures(PBRTextures pbrTexs) { m_PBR = pbrTexs; }
+		inline const std::shared_ptr<PBRTextures>& GetPBRTextures() { return m_PBR; }
+		inline void SetPBRTextures(const std::shared_ptr<PBRTextures>& pbrTexs) { m_PBR = pbrTexs; }
 
 	private:
-		PBRTextures m_PBR;
+		std::shared_ptr<PBRTextures> m_PBR;
 	};
 
 	class PhongMaterial : public Material
@@ -52,8 +52,8 @@ namespace Titan {
 		~PhongMaterial();
 
 		virtual void Bind(const std::shared_ptr<Shader>& shader) override;
-		inline std::shared_ptr<PhongElements>& GetPhong() { return m_Phong; }
-		inline std::shared_ptr<Texture2D>& GetTexture() { return m_Texture; }
+		inline const std::shared_ptr<PhongElements>& GetPhong() { return m_Phong; }
+		inline const std::shared_ptr<Texture2D>& GetTexture() { return m_Texture; }
 
 	private:
 		std::shared_ptr<PhongElements> m_Phong;

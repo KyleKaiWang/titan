@@ -31,9 +31,9 @@ in vec2 v_TexCoord;
 
 layout(binding = 0) uniform sampler2D g_Position;
 layout(binding = 1) uniform sampler2D g_WorldNormal;
-layout(binding = 2) uniform sampler2D g_Ambient;
-layout(binding = 3) uniform sampler2D g_Diffuse;
-layout(binding = 4) uniform sampler2D g_Specular;
+layout(binding = 2) uniform sampler2D g_Albedo;
+layout(binding = 3) uniform sampler2D g_Normal;
+layout(binding = 4) uniform sampler2D g_MetallicRoughness;
 layout(binding = 5) uniform sampler2D g_ShadowMap;
 
 // Lighting
@@ -145,13 +145,12 @@ void main()
     // retrieve data from gbuffer
 	vec3 pos = texture( g_Position, v_TexCoord ).rgb;
     vec3 worldNormal = texture( g_WorldNormal, v_TexCoord ).rgb;
-	//vec3 ambient = texture(g_Ambient, v_TexCoord).rgb;
-	vec3 diffuse = texture(g_Diffuse, v_TexCoord).rgb;
-	vec3 specular = texture(g_Specular, v_TexCoord).rgb;
-	float shininess = texture(g_Specular, v_TexCoord).a;
+	vec3 albedo = texture(g_Albedo, v_TexCoord).rgb;
+	vec3 metallic = texture(g_MetallicRoughness, v_TexCoord).rgb;
+	float shininess = texture(g_MetallicRoughness, v_TexCoord).a;
 	
-	vec3 result = CalcLighting(pos, worldNormal, diffuse, specular, 1.0f);
+	vec3 result = CalcLighting(pos, worldNormal, albedo, metallic, 1.0f);
     
 	result = pow(result, vec3(1.0/2.2));
-    color = vec4(result, 1.0f);
+    color = vec4(albedo, 1.0f);
 }

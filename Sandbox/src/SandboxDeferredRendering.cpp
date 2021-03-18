@@ -5,12 +5,12 @@
 
 #define MAX_POINT_LIGHTS 4
 
-bool EnableSSAO = true;
+bool EnableSSAO = false;
 bool EnableSkybox = false;
 bool EnableBloom = false;
 
 SandboxDeferredRendering::SandboxDeferredRendering()
-	: Layer("SandboxDeferredRendering"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 1000.0f)
+	: Layer("SandboxDeferredRendering"), m_CameraController(45.0f, (float)1280/(float)720, 0.01f, 2000.0f)
 {
 }
 
@@ -18,6 +18,12 @@ void SandboxDeferredRendering::OnAttach()
 {
 	m_DrawModel = std::make_shared<Titan::Model>("assets/meshes/sponza_crytek/sponza.obj");
 	m_DrawModel2 = std::make_shared<Titan::Model>("assets/meshes/bunny.obj");
+
+	m_PBRMat = std::make_shared<Titan::PBRMaterial>();
+	m_PBRMat->GetPBRTextures()->Albedo.push_back(Titan::Texture2D::Create("assets/textures/brushed-metal_A.png"));
+	m_PBRMat->GetPBRTextures()->Normal.push_back(Titan::Texture2D::Create("assets/textures/brushed-metal_N.png"));
+	m_PBRMat->GetPBRTextures()->Metallic.push_back(Titan::Texture2D::Create("assets/textures/brushed-metal_M.png"));
+	m_PBRMat->GetPBRTextures()->Roughness.push_back(Titan::Texture2D::Create("assets/textures/brushed-metal_R.png"));
 
 	m_DeferredRenderingPass.Init();
 
@@ -36,12 +42,12 @@ void SandboxDeferredRendering::DrawSceneObjects(const std::shared_ptr<Titan::Sha
 {
 	Titan::Renderer::BeginScene(m_CameraController.GetCamera());
 
-	for (auto mesh : m_DrawModel->Meshes) {
+	for (auto mesh : m_DrawModel->GetMeshes()) {
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		Titan::Renderer::Submit(shader, mesh, m_DirLight, transform);
 	}
 
-	for (auto mesh : m_DrawModel2->Meshes) {
+	for (auto mesh : m_DrawModel2->GetMeshes()) {
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.38f, 0.0f));
 		Titan::Renderer::Submit(shader, mesh, m_DirLight, transform);
 	}
@@ -114,6 +120,11 @@ void SandboxDeferredRendering::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(x, y));
 	ImGui::Begin("GBuffer", 0, ImGuiWindowFlags_NoCollapse);
 	
+	for (int i = 0; i < Titan::DeferredRendering::GBufferTextures.size(); ++i) {
+		ImGui::Image((void*)Titan::DeferredRendering::GBufferTextures[i]->GetTextureID(), ImVec2(x / 2, y / 2), ImVec2(0, 1), ImVec2(1, 0));
+		if (i % 2 == 0) ImGui::SameLine();
+	}
+
 	for(int i = 0; i < Titan::DeferredRendering::DebugTextures.size(); ++i) {
 		ImGui::Image((void*)Titan::DeferredRendering::DebugTextures[i]->GetTextureID(), ImVec2(x/2, y/2), ImVec2(0,1), ImVec2(1,0));
 		if (i % 2 == 0) ImGui::SameLine();

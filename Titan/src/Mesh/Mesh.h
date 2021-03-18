@@ -82,11 +82,15 @@ namespace Titan {
 	{
 	public:
 		Model(const std::string& filename);
-		std::vector<std::shared_ptr<Mesh>> Meshes;
-		std::vector<std::shared_ptr<Texture2D>> LoadTextures;
+		
+		inline const std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return m_Meshes; }
+		void SetMaterial(std::shared_ptr<Material> material);
 
+	private:
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		std::shared_ptr<TriangleMesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
 		std::vector<std::shared_ptr<Texture2D>> LoadMaterialTextures(aiMaterial* mat, aiTextureType type);
+		std::vector<std::shared_ptr<Mesh>> m_Meshes;
+		std::vector<std::shared_ptr<Texture2D>> m_LoadedTextures;
 	};
 }

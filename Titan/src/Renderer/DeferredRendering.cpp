@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define IBL_ENABLE 1
+#define IBL_ENABLE 0
 
 namespace Titan {
 
@@ -294,8 +294,8 @@ namespace Titan {
 			s_DeferredData->OutputFBO = Framebuffer::Create(desc);
 			s_DeferredData->OutputTex = s_DeferredData->OutputFBO->GetColorAttachment(0);
 			s_DeferredData->g_EmissiveColor = s_DeferredData->OutputFBO->GetColorAttachment(1);
-			DebugTextures.push_back(s_DeferredData->OutputTex);
-			DebugTextures.push_back(s_DeferredData->g_EmissiveColor);
+			//DebugTextures.push_back(s_DeferredData->OutputTex);
+			//DebugTextures.push_back(s_DeferredData->g_EmissiveColor);
 		}
 	}
 

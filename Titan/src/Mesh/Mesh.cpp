@@ -43,7 +43,7 @@ namespace Titan {
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			std::shared_ptr<TriangleMesh> triMesh = ProcessMesh(mesh, scene);
-			Meshes.push_back(triMesh);
+			m_Meshes.push_back(triMesh);
 		}
 
 		for (unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -71,7 +71,8 @@ namespace Titan {
 		
 		std::shared_ptr<TriangleMesh> triMesh = std::make_shared<TriangleMesh>(mesh);
 		
-		PBRTextures pbrTexs{ albedo, metalness, normal, roughness };
+		PBRTextures tex{ albedo, metalness, normal, roughness };
+		std::shared_ptr<PBRTextures> pbrTexs = std::make_shared<PBRTextures>(tex);
 		std::shared_ptr<PBRMaterial> pbrMat = std::make_shared<PBRMaterial>(pbrTexs);
 		triMesh->SetMeshMaterial(pbrMat);
 		
@@ -87,11 +88,11 @@ namespace Titan {
 			mat->GetTexture(type, i, &str);
 			// check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 			bool skip = false;
-			for (unsigned int j = 0; j < LoadTextures.size(); j++)
+			for (unsigned int j = 0; j < m_LoadedTextures.size(); j++)
 			{
-				if (std::strcmp(LoadTextures[j]->GetFilePath().data(), str.C_Str()) == 0)
+				if (std::strcmp(m_LoadedTextures[j]->GetFilePath().data(), str.C_Str()) == 0)
 				{
-					textures.push_back(LoadTextures[j]);
+					textures.push_back(m_LoadedTextures[j]);
 					skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
 					break;
 				}
@@ -100,10 +101,18 @@ namespace Titan {
 			{   // if texture hasn't been loaded already, load it
 				std::shared_ptr<Texture2D> texture = Texture2D::Create(str.C_Str());
 				textures.push_back(texture);
-				LoadTextures.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+				m_LoadedTextures.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
 			}
 		}
 		return textures;
+	}
+
+	void Model::SetMaterial(std::shared_ptr<Material> material)
+	{
+		for (auto mesh :m_Meshes)
+		{
+			mesh->SetMeshMaterial(material);
+		}
 	}
 
 	Mesh::Mesh()
