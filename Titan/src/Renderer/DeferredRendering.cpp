@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "FrameBuffer.h"
 #include "Application.h"
+#include "Renderer/RenderCommand.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -294,7 +295,7 @@ namespace Titan {
 			s_DeferredData->OutputFBO = Framebuffer::Create(desc);
 			s_DeferredData->OutputTex = s_DeferredData->OutputFBO->GetColorAttachment(0);
 			s_DeferredData->g_EmissiveColor = s_DeferredData->OutputFBO->GetColorAttachment(1);
-			//DebugTextures.push_back(s_DeferredData->OutputTex);
+			
 			//DebugTextures.push_back(s_DeferredData->g_EmissiveColor);
 		}
 	}
@@ -317,7 +318,7 @@ namespace Titan {
 		glNamedFramebufferDrawBuffers(s_DeferredData->GBufferFBO->GetFramebufferID(), GBufferTextures.size(), &attachments[0]);
 
 		glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderCommand::Clear();
 
 		drawObject(DeferredRendering::GetGeometryShader());
 
@@ -330,7 +331,7 @@ namespace Titan {
 		glViewport(0, 0, s_DeferredData->ShadowMapFBO->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
 		glNamedFramebufferDrawBuffer(s_DeferredData->ShadowMapFBO->GetFramebufferID(), GL_COLOR_ATTACHMENT0);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderCommand::Clear();
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
@@ -345,7 +346,7 @@ namespace Titan {
 
 	void DeferredRendering::BlurShadowPass()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderCommand::Clear();
 		glDisable(GL_DEPTH_TEST);
 		glViewport(0, 0, s_DeferredData->BlurShadowMapFBOs[0]->GetFramebufferSize().first, s_DeferredData->ShadowMapFBO->GetFramebufferSize().second);
 
@@ -364,7 +365,7 @@ namespace Titan {
 		s_DeferredData->BlurShadowMapShader->Unbind();
 		s_DeferredData->BlurShadowMapFBOs[0]->Unbind();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderCommand::Clear();
 
 		//Vertical Pass
 		s_DeferredData->BlurShadowMapFBOs[1]->Bind();
@@ -378,6 +379,7 @@ namespace Titan {
 		s_DeferredData->BlurShadowMapShader->Unbind();
 		s_DeferredData->BlurShadowMapFBOs[1]->Unbind();
 		glViewport(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+
 	}
 
 	void DeferredRendering::SSAOPass(PerspectiveCamera& camera)
@@ -394,17 +396,13 @@ namespace Titan {
 	// slot 2 : g_Albedo
 	// slot 3 : g_Normal
 	// slot 4 : g_MetallicRoughness
-	// slot 5 : g_SpecularTexture;
-	// slot 6 : g_IrradianceTexture
-	// slot 7 : g_SpecularBRDF_LUT;
-	// slot 8 : g_SSAO;
 
 	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, DirectionalLight& dirLight, std::vector<PointLight>& pointLights, bool enableSSAO)
 	{
-		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-		glNamedFramebufferDrawBuffers(s_DeferredData->OutputFBO->GetFramebufferID(), 2, &attachments[0]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_DEPTH_TEST);
+		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
+		glNamedFramebufferDrawBuffers(s_DeferredData->OutputFBO->GetFramebufferID(), 1, &attachments[0]);
+		RenderCommand::Clear();
+		RenderCommand::DepthTest(false, false);
 		s_DeferredData->OutputFBO->Bind();
 		s_DeferredData->LightingShader->Bind();
 
@@ -504,6 +502,18 @@ namespace Titan {
 	{
 		Renderer_Bloom.Render(s_DeferredData->g_EmissiveColor);
 		Renderer_Tonemap.Render(s_DeferredData->OutputTex, Renderer_Bloom.GetGaussianBlurTex());
+	}
+
+	void DeferredRendering::EndRendering()
+	{
+		RenderCommand::TransferColorBit(
+			s_DeferredData->OutputFBO->GetFramebufferID(),
+			s_DeferredData->OutputFBO->GetFramebufferSize().first,
+			s_DeferredData->OutputFBO->GetFramebufferSize().second,
+			0,
+			Application::Get().GetWindow().GetWidth(),
+			Application::Get().GetWindow().GetHeight()
+		);
 	}
 
 	const std::shared_ptr<Shader>& DeferredRendering::GetGeometryShader()

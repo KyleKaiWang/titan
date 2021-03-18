@@ -26,6 +26,7 @@ namespace Titan {
 		static void BeginSkyboxPass();
 		static void EndSkyboxPass();
 		static void PostProcessPass_Bloom();
+		static void EndRendering();
 
 		static RendererSSAO Renderer_SSAO;
 		static PostProcessBloom Renderer_Bloom;
