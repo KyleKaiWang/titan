@@ -19,12 +19,20 @@ IncludeDir["glm"] = "Titan/thirdparty/glm"
 IncludeDir["stb_image"] = "Titan/thirdparty/stb_image"
 IncludeDir["assimp"] = "Titan/thirdparty/assimp/include"
 
-group "Dependencies"
-	include "Titan/thirdparty/GLFW"
-	include "Titan/thirdparty/Glad"
-	include "Titan/thirdparty/imgui"
+LibDir = {}
+LibDir["assimp"] = "Titan/thirdparty/assimp/lib"
+
+LibName = {}
+LibName["assimp"] = "assimp-vc142-mtd.lib"
+
+DllName = {}
+DllName["assimp"] = "assimp-vc142-mtd.dll"
+
+
+include "Titan/thirdparty/GLFW"
+include "Titan/thirdparty/Glad"
+include "Titan/thirdparty/imgui"
 	
-group ""
 project "Titan"
 	location "Titan"
 	kind "StaticLib"
@@ -76,12 +84,29 @@ project "Titan"
 
 	filter "system:windows"
 		systemversion "latest"
-
+	
 		defines
 		{
 			"TITAN_PLATFORM_WINDOWS",
 			"TITAN_BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
+		}
+		
+	postbuildcommands
+		{
+			--("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\""),
+		}
+
+	filter "configurations:Debug"
+		postbuildcommands
+		{
+			("{COPY} $(SolutionDir)%{LibDir.assimp}/%{DllName.assimp} \"$(SolutionDir)bin/" .. outputdir .. "/Sandbox/\""),
+		}
+
+	filter "configurations:Release"
+		postbuildcommands
+		{
+			("{COPY} $(SolutionDir)%{LibDir.assimp}/%{DllName.assimp} \"$(SolutionDir)bin/" .. outputdir .. "/Sandbox/\""),
 		}
 
 	filter "configurations:Debug"
@@ -130,7 +155,12 @@ project "Sandbox"
 		{
 			"TITAN_PLATFORM_WINDOWS"
 		}
-
+		
+	postbuildcommands
+	{
+		("{COPY} $(SolutionDir)Sandbox/assets \"$(SolutionDir)bin/" .. outputdir .. "/Sandbox/assets\""),
+		("{COPY} $(SolutionDir)Sandbox/shaders \"$(SolutionDir)bin/" .. outputdir .. "/Sandbox/shaders\"")
+	}
 	filter "configurations:Debug"
 		defines "TITAN_DEBUG"
 		runtime "Debug"
