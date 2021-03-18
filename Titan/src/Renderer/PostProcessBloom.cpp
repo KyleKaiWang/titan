@@ -21,9 +21,9 @@ namespace Titan {
 		int height = window.GetHeight();
 
 		gaussianBlurShader = Shader::Create("shaders/DrawQuad.vs", "shaders/GaussianBlur_Bloom.fs");
-		gaussianBlurShader->SetInt("image", 0);
 
 		TextureDesc texDesc;
+		texDesc.Target = GL_TEXTURE_2D;
 		texDesc.Width = width;
 		texDesc.Height = height;
 		texDesc.Format = GL_RGBA32F;
@@ -40,6 +40,10 @@ namespace Titan {
 		desc.nrColorAttachment = 1;
 		desc.Depth = false;
 		desc.TexDesc = texDesc;
+		{
+			int err = glGetError();
+			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+		}
 		gaussianBlurFBO = Framebuffer::Create(desc);
 		gaussianBlurTex = gaussianBlurFBO->GetColorAttachment(0);
 		tempFBO = Framebuffer::Create(desc);
@@ -50,6 +54,7 @@ namespace Titan {
 	{
 		glDisable(GL_DEPTH_TEST);
 		gaussianBlurShader->Bind();
+		gaussianBlurShader->SetInt("image", 0);
 		bool first_iteration = true;
 		int amount = 10;
 		for (int i = 0; i < amount; ++i) {

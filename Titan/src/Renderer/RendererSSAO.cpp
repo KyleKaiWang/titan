@@ -40,6 +40,7 @@ namespace Titan {
 		// SSAO
 		{
 			TextureDesc texDesc;
+			texDesc.Target = GL_TEXTURE_2D;
 			texDesc.Width = width;
 			texDesc.Height = height;
 			texDesc.Format = GL_RGBA32F;
@@ -60,6 +61,7 @@ namespace Titan {
 		// SSAO Blur
 		{
 			TextureDesc texDesc;
+			texDesc.Target = GL_TEXTURE_2D;
 			texDesc.Width = width;
 			texDesc.Height = height;
 			texDesc.Format = GL_RGBA32F;

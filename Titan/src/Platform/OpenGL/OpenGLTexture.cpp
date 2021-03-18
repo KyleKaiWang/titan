@@ -112,13 +112,16 @@ namespace Titan {
 		if (texDesc.Target == GL_TEXTURE_2D_MULTISAMPLE)
 		{
 			glCreateTextures(texDesc.Target, 1, &m_RendererID);
-			//glTexImage2DMultisample(texDesc.Target, texDesc.Samples, texDesc.Format, m_Width, m_Height, GL_TRUE);
 			glTextureStorage2DMultisample(m_RendererID, texDesc.Samples, texDesc.Format, m_Width, m_Height, GL_TRUE);
 			int err = glGetError();
 			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 		} 
 		else
 		{
+			{
+				int err = glGetError();
+				TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+			}
 			glCreateTextures(texDesc.Target, 1, &m_RendererID);
 			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, texDesc.Width, texDesc.Height);
 			if(texDesc.MipLevels != 0) 
@@ -128,20 +131,20 @@ namespace Titan {
 
 			float borderColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 			glTextureParameterfv(m_RendererID, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-			int err = glGetError();
-			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+			{
+				int err = glGetError();
+				TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+			}
 		}
 		
 		for (auto pair : texDesc.Parameters) {
 			glTextureParameteri(m_RendererID, pair.first, pair.second);
 			
-			int err = glGetError();
-			TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+			{
+				int err = glGetError();
+				TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
+			}
 		}
-
-		int err = glGetError();
-		TITAN_CORE_ASSERT(err == 0, "GL Error code", err);
 	}
 	
 	OpenGLTexture2D::~OpenGLTexture2D()

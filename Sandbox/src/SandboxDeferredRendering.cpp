@@ -3,6 +3,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define MAX_POINT_LIGHTS 4
+
 bool EnableSSAO = true;
 bool EnableSkybox = false;
 bool EnableBloom = false;
@@ -18,11 +20,16 @@ void SandboxDeferredRendering::OnAttach()
 	m_DrawModel2 = std::make_shared<Titan::Model>("assets/meshes/bunny.obj");
 
 	m_DeferredRenderingPass.Init();
+
+	// Point Lights
+	for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
+		Titan::PointLight point_light;
+		m_PointLights.push_back(point_light);
+	}
 }
 
 void SandboxDeferredRendering::OnDetach()
 {
-
 }
 
 void SandboxDeferredRendering::DrawSceneObjects(const std::shared_ptr<Titan::Shader>& shader)
@@ -63,7 +70,7 @@ void SandboxDeferredRendering::OnUpdate(Titan::Timestep ts)
 	}
 
 	// Lighting Pass
-	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_DirLight);
+	Titan::DeferredRendering::DirectionalLightPass(m_CameraController.GetCamera(), m_DirLight, m_PointLights);
 
 	// Draw Skybox
 	if (EnableSkybox) {

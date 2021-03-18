@@ -20,7 +20,7 @@ namespace Titan {
 		static void ShadowPass(std::function<void(const std::shared_ptr<Titan::Shader>&)> drawObject);
 		static void BlurShadowPass();
 		static void SSAOPass(PerspectiveCamera& camera);
-		static void DirectionalLightPass(PerspectiveCamera& camera, Light& light, bool enableSSAO = true);
+		static void DirectionalLightPass(PerspectiveCamera& camera, DirectionalLight& dirLight, std::vector<PointLight>& pointLights, bool enableSSAO = true);
 		static void PointLightPass(PerspectiveCamera& camera, std::vector<PointLight>& pointLights);
 		static void MomentShadowMapPass(PerspectiveCamera& camera, Light& light);
 		static void BeginSkyboxPass();

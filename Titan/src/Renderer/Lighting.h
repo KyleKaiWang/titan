@@ -91,8 +91,6 @@ namespace Titan {
 
 	struct PointLight : public Light
 	{
-		float Linear = 1.0f;
-		float Quadratic = 0.7f;
 		float Radius = 1.8f;
 		
 		glm::mat4 LookAtPerFace[6];

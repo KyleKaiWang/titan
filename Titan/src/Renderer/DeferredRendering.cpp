@@ -78,7 +78,7 @@ namespace Titan {
 		s_DeferredData->GeometryShader = Shader::Create("shaders/Geometry_PBR.vs", "shaders/Geometry_PBR.fs");
 		s_DeferredData->ShadowMapShader = Shader::Create("shaders/ShadowMapPass.vs", "shaders/ShadowMapPass.fs");
 		s_DeferredData->BlurShadowMapShader = Shader::Create("shaders/GaussianBlur.vs", "shaders/GaussianBlur.fs");
-		s_DeferredData->LightingShader = Shader::Create("shaders/LightingPass_PBR.vs", "shaders/LightingPass_PBR.fs");
+		s_DeferredData->LightingShader = Shader::Create("shaders/DrawQuad.vs", "shaders/LightingPass_PBR.fs");
 		s_DeferredData->PointLightShader = Shader::Create("shaders/PointLightPass.vs", "shaders/PointLightPass.fs");
 		s_DeferredData->SkyboxShader = Shader::Create("shaders/Skybox.vs", "shaders/Skybox.fs");
 		
@@ -96,6 +96,7 @@ namespace Titan {
 		//GBuffers
 		{
 			TextureDesc texDesc;
+			texDesc.Target = GL_TEXTURE_2D;
 			texDesc.Width = width;
 			texDesc.Height = height;
 			texDesc.Format = GL_RGBA32F;
@@ -110,6 +111,8 @@ namespace Titan {
 			desc.Height = height;
 			desc.nrColorAttachment = 5;
 			desc.TexDesc = texDesc;
+			desc.Depth = true;
+			desc.DepthFormat = GL_DEPTH_COMPONENT32F;
 			
 			s_DeferredData->GBufferFBO = Framebuffer::Create(desc);
 			s_DeferredData->g_Posistion = s_DeferredData->GBufferFBO->GetColorAttachment(0);
@@ -255,6 +258,7 @@ namespace Titan {
 
 			uint32_t tsize = 256;
 			TextureDesc desc;
+			desc.Target = GL_TEXTURE_2D;
 			desc.Width = tsize;
 			desc.Height = tsize;
 			desc.Format = GL_RG16F;
@@ -273,6 +277,7 @@ namespace Titan {
 		//Final Output
 		{
 			TextureDesc texDesc;
+			texDesc.Target = GL_TEXTURE_2D;
 			texDesc.Width = width;
 			texDesc.Height = height;
 			texDesc.Format = GL_RGBA32F;
@@ -394,7 +399,7 @@ namespace Titan {
 	// slot 7 : g_SpecularBRDF_LUT;
 	// slot 8 : g_SSAO;
 
-	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, Light& light, bool enableSSAO)
+	void DeferredRendering::DirectionalLightPass(PerspectiveCamera& camera, DirectionalLight& dirLight, std::vector<PointLight>& pointLights, bool enableSSAO)
 	{
 		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glNamedFramebufferDrawBuffers(s_DeferredData->OutputFBO->GetFramebufferID(), 2, &attachments[0]);
@@ -402,7 +407,22 @@ namespace Titan {
 		glDisable(GL_DEPTH_TEST);
 		s_DeferredData->OutputFBO->Bind();
 		s_DeferredData->LightingShader->Bind();
-		light.UniformBinding(s_DeferredData->LightingShader);
+
+		// Directional Light
+		dirLight.UniformBinding(s_DeferredData->LightingShader);
+
+		// Point Lights
+		for (unsigned int i = 0; i < pointLights.size(); ++i) {
+			s_DeferredData->LightingShader->SetFloat3("point_lights[" + std::to_string(i) + "].position", pointLights[i].Position);
+			s_DeferredData->LightingShader->SetFloat3("point_lights[" + std::to_string(i) + "].color", pointLights[i].Diffuse);
+			const float constant = 1.0f;
+			const float linear = 1.0f;
+			const float quadratic = 0.7f;
+			const float maxBrightness = std::fmaxf(std::fmaxf(pointLights[i].Diffuse.r, pointLights[i].Diffuse.g), pointLights[i].Diffuse.b);
+			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+			s_DeferredData->LightingShader->SetFloat("point_lights[" + std::to_string(i) + "].radius", radius);
+		}
+
 		s_DeferredData->LightingShader->SetFloat3("u_ViewPos", camera.GetPosition());
 		s_DeferredData->LightingShader->SetInt("u_EnableSSAO", enableSSAO);
 		for (int i = 0; i < GBufferTextures.size(); ++i) {
@@ -427,16 +447,14 @@ namespace Titan {
 		s_DeferredData->PointLightShader->Bind();
 		s_DeferredData->PointLightShader->SetInt("u_LightNum", pointLights.size());
 		for (unsigned int i = 0; i < pointLights.size(); ++i) {
-			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Position", pointLights[i].Position);
-			s_DeferredData->PointLightShader->SetFloat3("u_Lights[" + std::to_string(i) + "].Color", pointLights[i].Diffuse);
+			s_DeferredData->PointLightShader->SetFloat3("point_lights[" + std::to_string(i) + "].position", pointLights[i].Position);
+			s_DeferredData->PointLightShader->SetFloat3("point_lights[" + std::to_string(i) + "].color", pointLights[i].Diffuse);
 			const float constant = 1.0f;
-			const float linear = pointLights[i].Linear;
-			const float quadratic = pointLights[i].Quadratic;
-			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Linear", linear);
-			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Quadratic", quadratic);
+			const float linear = 1.0f;
+			const float quadratic = 0.7f;
 			const float maxBrightness = std::fmaxf(std::fmaxf(pointLights[i].Diffuse.r, pointLights[i].Diffuse.g), pointLights[i].Diffuse.b);
 			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-			s_DeferredData->PointLightShader->SetFloat("u_Lights[" + std::to_string(i) + "].Radius", radius);
+			s_DeferredData->PointLightShader->SetFloat("point_lights[" + std::to_string(i) + "].radius", radius);
 		}
 		s_DeferredData->PointLightShader->SetFloat3("u_ViewPos", camera.GetPosition());
 		for (int i = 0; i < GBufferTextures.size(); ++i) {

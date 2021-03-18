@@ -18,6 +18,7 @@ public:
 private:
 	Titan::CameraController m_CameraController;
 	Titan::DirectionalLight m_DirLight;
+	std::vector<Titan::PointLight> m_PointLights;
 	std::shared_ptr<Titan::Model> m_DrawModel;
 	std::shared_ptr<Titan::Model> m_DrawModel2;
 	std::shared_ptr<Titan::Mesh> m_DrawLight;
@@ -27,7 +28,6 @@ private:
 	std::shared_ptr<Titan::Mesh> m_DrawSkybox;
 
 	std::vector<std::shared_ptr<Titan::PBRMaterial>> m_PBRMats;
-	std::vector<Titan::PointLight> m_PointLights;
 
 	std::shared_ptr<Titan::Framebuffer> m_FBO;
 
